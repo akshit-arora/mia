@@ -1,0 +1,12 @@
+{
+  "_comment": "Gzip budgets in KB (1 KB = 1024 bytes). PLAN section 6 and D7: core audio pack is budgeted separately from the game.",
+  "unit": "KB",
+  "gzip": {
+    "app": 150,
+    "art": 40,
+    "audioCore": 100,
+    "audioGame": 80,
+    "other": 40,
+    "total": 400
+  }
+}

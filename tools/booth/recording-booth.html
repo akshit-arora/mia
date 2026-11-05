@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Animal Express recording booth</title>
+<style>
+:root{--bg:#fffaf0;--ink:#1d2b53;--mute:#5b6485;--card:#fff;--line:#d9d2c0;--accent:#c2410c;--ok:#15803d;--rec:#b91c1c}
+*{box-sizing:border-box}
+body{margin:0;font:16px/1.45 system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+header{position:sticky;top:0;z-index:5;background:var(--ink);color:#fff;padding:10px 16px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+header h1{font-size:18px;margin:0 8px 0 0}
+header label{display:flex;gap:6px;align-items:center}
+header input{width:5em;padding:6px;border-radius:6px;border:0;font-size:16px}
+#progress{font-weight:700;font-variant-numeric:tabular-nums}
+#meterwrap{display:flex;align-items:center;gap:6px}
+#meter{width:140px;height:14px;background:#334;border-radius:7px;overflow:hidden}
+#meterbar{height:100%;width:0;background:#4ade80;transition:width .05s}
+button{font:inherit;font-weight:600;padding:10px 16px;border-radius:10px;border:2px solid var(--ink);background:#fff;color:var(--ink);cursor:pointer;min-height:44px}
+button:focus-visible,input:focus-visible,audio:focus-visible{outline:3px solid #f59e0b;outline-offset:2px}
+button.rec{background:var(--rec);color:#fff;border-color:var(--rec)}
+button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+button:disabled{opacity:.45;cursor:not-allowed}
+main{max-width:900px;margin:0 auto;padding:12px 16px 80px}
+.note{background:#fff3cd;border:1px solid #e6c766;border-radius:10px;padding:10px 14px;margin:12px 0}
+#status{min-height:1.5em;margin:8px 0;font-weight:600}
+h2{margin:28px 0 4px;font-size:20px}
+.scenenote{margin:0 0 8px;color:var(--mute);font-style:italic}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:10px 0}
+.card.done{border-color:var(--ok);border-left-width:6px}
+.key{font:600 13px ui-monospace,monospace;background:#eef;padding:2px 6px;border-radius:5px}
+.text{font-size:26px;font-weight:700;margin:6px 0}
+.meta{color:var(--mute);font-size:14px;margin:2px 0}
+.meta b{color:var(--ink)}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:8px}
+.takes{list-style:none;padding:0;margin:8px 0 0}
+.takes li{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:6px 0}
+.takes audio{height:36px;max-width:260px}
+.takes label{display:flex;gap:6px;align-items:center;font-weight:600}
+.takes input[type=radio]{width:22px;height:22px}
+.recording{animation:pulse 1s infinite}
+@media (prefers-reduced-motion:reduce){.recording{animation:none}}
+@keyframes pulse{50%{opacity:.7}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Recording booth</h1>
+  <label>Language folder <input id="locale" value="en" maxlength="12" aria-describedby="localehelp" autocomplete="off"></label>
+  <span id="progress" aria-label="Progress">0/0</span>
+  <span id="meterwrap"><span>Mic level</span><span id="meter" role="img" aria-label="Microphone level meter"><span id="meterbar"></span></span></span>
+  <button id="export" class="primary" type="button">Export zip</button>
+</header>
+<main>
+  <div class="note">
+    <p id="localehelp"><b>Before you start.</b> Type the language folder name (for example <code>en</code> or <code>hi</code>). Files in the zip are named <code>&lt;folder&gt;/&lt;key&gt;.take&lt;N&gt;.&lt;ext&gt;</code>; unzip into the project's <code>recordings/</code> folder, then run <code>npm run audio:pack</code>.</p>
+    <p><b>Microphone access.</b> Browsers only allow the microphone on <code>https</code> pages or on <code>localhost</code> (Chrome also allows <code>file://</code> after you grant permission; Safari and Firefox may not). If recording does not start, serve this folder locally, for example <code>cd tools/booth &amp;&amp; python3 -m http.server 8765</code>, then open <code>http://localhost:8765/recording-booth.html</code>.</p>
+    <p><b>Tips.</b> Phone 15 to 20 cm away, same distance every time, half a second of silence before and after. Up to 3 takes per line; choose "Keep this take" for the best one. Takes stay in this browser if you refresh. Nothing is uploaded anywhere.</p>
+  </div>
+  <div id="status" role="status" aria-live="polite"></div>
+  <div id="list"></div>
+</main>
+<script id="data" type="application/json">{"scenes":[{"id":"A","title":"Scene A: Opening","note":"","rows":[{"key":"app.tap_truck","text":"Tap the truck!","mood":"Inviting, like pointing at something fun","energy":"4, a little slow","notes":"Say it as a gift, not a command"},{"key":"app.welcome","text":"Hello! Let's go!","mood":"Waving from a window, beaming","energy":"4, quick","notes":"Smile while you say it"},{"key":"truck.honk","text":"Toot toot!","mood":"Playful sound effect in your voice","energy":"4, quick","notes":"Short, silly"},{"key":"truck.arrive","text":"Beep beep! Crate coming!","mood":"Excited announcement","energy":"4, quick","notes":"\"Beep beep\" bouncy, \"Crate coming\" rises"}]},{"id":"B","title":"Scene B: The crate","note":"","rows":[{"key":"crate.shake","text":"What is inside?","mood":"Hushed and curious, leaning in","energy":"3, slow","notes":"Whisper-ish, then lift on \"inside\""},{"key":"crate.open","text":"Pop! Hello, friend!","mood":"Burst of joy, then warm","energy":"5 then 4, fast","notes":"A real \"Pop!\" with your mouth, then soften"}]},{"id":"C","title":"Scene C: Animal names (record all in one sitting)","note":"Say each as a proud, delighted discovery. Record all 14 in one sitting, same distance, same energy.","rows":[{"key":"name.lion","text":"Lion!","mood":"","energy":"","notes":"Say it as a proud delighted discovery"},{"key":"name.tiger","text":"Tiger!","mood":"","energy":"","notes":"Say it as a proud delighted discovery"},{"key":"name.elephant","text":"Elephant!","mood":"","energy":"","notes":"Say it as a proud delighted discovery"},{"key":"name.monkey","text":"Monkey!","mood":"","energy":"","notes":"Say it as a proud delighted discovery"},{"key":"name.bear","text":"Bear!","mood":"","energy":"","notes":"Say it as a proud delighted discovery"},{"key":"name.peacock","text":"Peacock!","mood":"","energy":"","notes":"Say it as a proud delighted discovery"},{"key":"name.cow","text":"Cow!","mood":"","energy":"","notes":"Say it as a proud delighted discovery"},{"key":"name.buffalo","text":"Buffalo!","mood":"","energy":"","notes":"Say it as a proud delighted discovery"},{"key":"name.goat","text":"Goat!","mood":"","energy":"","notes":"Say it as a proud delighted discovery"},{"key":"name.hen","text":"Hen!","mood":"","energy":"","notes":"Say it as a proud delighted discovery"},{"key":"name.horse","text":"Horse!","mood":"","energy":"","notes":"Say it as a proud delighted discovery"},{"key":"name.dog","text":"Dog!","mood":"","energy":"","notes":"Say it as a proud delighted discovery"},{"key":"name.cat","text":"Cat!","mood":"","energy":"","notes":"Say it as a proud delighted discovery"},{"key":"name.rabbit","text":"Rabbit!","mood":"","energy":"","notes":"Say it as a proud delighted discovery"}]},{"id":"D","title":"Scene D: Choosing a place","note":"","rows":[{"key":"drag.prompt","text":"Where should it go?","mood":"A gentle invitation, never an instruction","energy":"3, slightly slow","notes":"Rise at the end, curious"},{"key":"idle.nudge","text":"Shall we pick one?","mood":"Patient and playful, with a smile","energy":"3, relaxed","notes":"Never impatient"},{"key":"zone.jungle","text":"Jungle!","mood":"Wide-eyed, adventurous","energy":"4","notes":"Draw out the \"ng\" slightly"},{"key":"zone.farm","text":"Farm!","mood":"Warm and cheerful","energy":"4","notes":""},{"key":"zone.home","text":"Home!","mood":"Cosy and happy","energy":"3","notes":"Softer than the other two"}]},{"id":"E","title":"Scene E: Getting it right","note":"","rows":[{"key":"correct.1","text":"Yes! In it goes!","mood":"Delighted, up and out","energy":"5, fast","notes":"Pitch goes up on \"Yes!\""},{"key":"correct.2","text":"Hooray! It likes it here!","mood":"Happy surprise, warm","energy":"5, fast","notes":"Smile on \"likes\""},{"key":"correct.3","text":"Wonderful!","mood":"Proud and soft, like a hug","energy":"4, a little slow","notes":"Lower and warmer than the other two"}]},{"id":"F","title":"Scene F: Not quite there","note":"","rows":[{"key":"wrong.gentle","text":"Hmm, let's try again.","mood":"Amused, thoughtful, a tiny \"hee hee\" in the voice","energy":"3, relaxed","notes":"Say \"Hmm\" like you are thinking, not doubting"},{"key":"wrong.hint","text":"Listen to its sound.","mood":"A friendly secret tip","energy":"3, slow","notes":"Lean in like sharing a clue"}]},{"id":"G","title":"Scene G: Chiku wonders","note":"","rows":[{"key":"wonder.appear","text":"Look, something curious!","mood":"Whispered excitement","energy":"3, slow","notes":"Eyes wide"},{"key":"wonder.ask","text":"I wonder... why?","mood":"Dreamy, trailing off","energy":"2, slow","notes":"Pause after \"wonder\", rise on \"why\""},{"key":"wonder.tap","text":"Tap and find out!","mood":"Excited whisper","energy":"3, quick","notes":"Like sharing a secret plan"},{"key":"discover.wow","text":"Oh! Did you see that?","mood":"A small gasp, then delight","energy":"4, quick","notes":"Real gasp before \"Oh\""},{"key":"discover.again","text":"Want to see it again?","mood":"Hopeful, playful","energy":"3, relaxed","notes":""},{"key":"sticker.new","text":"A new sticker for you!","mood":"Proud and sweet","energy":"4, medium","notes":""}]},{"id":"H","title":"Scene H: Wonder facts (Chiku)","note":"","rows":[{"key":"fact.elephant.trunk","text":"Trunk is like a hand!","mood":"","energy":"","notes":""},{"key":"fact.monkey.banana","text":"Monkeys peel their bananas!","mood":"","energy":"","notes":""},{"key":"fact.peacock.feathers","text":"It spreads its feathers like a fan!","mood":"","energy":"","notes":""},{"key":"fact.goat.climb","text":"Goats are great climbers!","mood":"","energy":"","notes":""},{"key":"fact.hen.chicks","text":"Hens keep chicks warm!","mood":"","energy":"","notes":""},{"key":"fact.cat.purr","text":"Cats purr when they are happy!","mood":"","energy":"","notes":""}]},{"id":"H","title":"Scene H2: Chiku's questions (before a Wonder reveal)","note":"","rows":[{"key":"wonder.q.elephant","text":"What can that nose do?","mood":"Curious, tilting your head","energy":"3, slow","notes":"Rise on \"do\""},{"key":"wonder.q.monkey","text":"What is it holding?","mood":"Whispered, nosy","energy":"3, slow","notes":"Smile on \"holding\""},{"key":"wonder.q.peacock","text":"What is behind it?","mood":"Mysterious","energy":"3, slow","notes":"Lean in"},{"key":"wonder.q.goat","text":"Can it climb that rock?","mood":"Playful, a little challenging","energy":"3, medium","notes":"Rise on \"rock\""},{"key":"wonder.q.hen","text":"What is under there?","mood":"Hushed, curious","energy":"2, slow","notes":"Like peeking under a blanket"},{"key":"wonder.q.cat","text":"Listen closely...","mood":"Very soft, almost a whisper","energy":"2, slow","notes":"Trail off, then pause"}]},{"id":"I","title":"Scene I: Evening","note":"","rows":[{"key":"park.grow","text":"Our town is growing!","mood":"Proud, warm","energy":"3, about 10% slower","notes":""},{"key":"day.end","text":"Time to rest now.","mood":"Soft, sleepy, like a bedtime","energy":"2, about 20% slower","notes":"Lower your pitch a little"},{"key":"day.tomorrow","text":"See you tomorrow!","mood":"A whisper-smile","energy":"2, slow","notes":"End on a soft, rising note"}]}]}</script>
+<script>
+// Tiny store-only (no compression) ZIP writer with CRC32. Pure functions, no DOM, works in node and browsers.
+// build-booth.mjs inlines this file into the booth page (stripping the `export` keywords).
+
+function crcTable() {
+  const t = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    t[n] = c >>> 0;
+  }
+  return t;
+}
+const CRC_T = crcTable();
+
+function crc32(bytes) {
+  let c = 0xffffffff;
+  for (let i = 0; i < bytes.length; i++) c = CRC_T[(c ^ bytes[i]) & 0xff] ^ (c >>> 8);
+  return (c ^ 0xffffffff) >>> 0;
+}
+
+function dosDateTime(d) {
+  const time = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1);
+  const date = ((Math.max(1980, d.getFullYear()) - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
+  return { time, date };
+}
+
+/** files: [{ name: string, data: Uint8Array }]. Returns a Uint8Array containing a valid .zip (method 0, stored). */
+function makeZip(files, when) {
+  const enc = new TextEncoder();
+  const { time, date } = dosDateTime(when || new Date());
+  const chunks = [];
+  const central = [];
+  let offset = 0;
+  const push = (u8) => { chunks.push(u8); offset += u8.length; };
+  for (const f of files) {
+    const name = enc.encode(f.name);
+    const data = f.data;
+    const crc = crc32(data);
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034b50, true);
+    lh.setUint16(4, 20, true);
+    lh.setUint16(6, 0x0800, true); // UTF-8 names
+    lh.setUint16(8, 0, true);      // stored
+    lh.setUint16(10, time, true);
+    lh.setUint16(12, date, true);
+    lh.setUint32(14, crc, true);
+    lh.setUint32(18, data.length, true);
+    lh.setUint32(22, data.length, true);
+    lh.setUint16(26, name.length, true);
+    lh.setUint16(28, 0, true);
+    central.push({ name, crc, size: data.length, offset });
+    push(new Uint8Array(lh.buffer)); push(name); push(data);
+  }
+  const cdStart = offset;
+  for (const c of central) {
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014b50, true);
+    ch.setUint16(4, 20, true);
+    ch.setUint16(6, 20, true);
+    ch.setUint16(8, 0x0800, true);
+    ch.setUint16(10, 0, true);
+    ch.setUint16(12, time, true);
+    ch.setUint16(14, date, true);
+    ch.setUint32(16, c.crc, true);
+    ch.setUint32(20, c.size, true);
+    ch.setUint32(24, c.size, true);
+    ch.setUint16(28, c.name.length, true);
+    ch.setUint32(42, c.offset, true);
+    push(new Uint8Array(ch.buffer)); push(c.name);
+  }
+  const cdSize = offset - cdStart;
+  const end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true);
+  end.setUint16(8, central.length, true);
+  end.setUint16(10, central.length, true);
+  end.setUint32(12, cdSize, true);
+  end.setUint32(16, cdStart, true);
+  push(new Uint8Array(end.buffer));
+  const out = new Uint8Array(offset);
+  let p = 0;
+  for (const c of chunks) { out.set(c, p); p += c.length; }
+  return out;
+}
+
+(function () {
+  'use strict';
+  var DATA = JSON.parse(document.getElementById('data').textContent);
+  var MAX_TAKES = 3;
+  var state = {}; // key -> { takes: {1:{blob,mime,url}, ...}, kept: n|null }
+  var recorder = null, recKey = null, chunks = [], stream = null, audioCtx = null, rafId = 0;
+  var $ = function (id) { return document.getElementById(id); };
+  var localeEl = $('locale');
+  var total = DATA.scenes.reduce(function (n, s) { return n + s.rows.length; }, 0);
+
+  function say(msg) { $('status').textContent = msg; }
+  function locale() { return (localeEl.value || 'en').replace(/[^A-Za-z0-9_-]/g, '') || 'en'; }
+  function ext(mime) {
+    if (/mp4|aac|m4a/.test(mime)) return 'mp4';
+    if (/ogg/.test(mime)) return 'ogg';
+    if (/wav/.test(mime)) return 'wav';
+    return 'webm';
+  }
+  function st(key) { return state[key] || (state[key] = { takes: {}, kept: null }); }
+  function takeNums(key) { return Object.keys(st(key).takes).map(Number).sort(); }
+
+  // ---------- optional IndexedDB persistence (never required) ----------
+  var db = null;
+  function dbOpen() {
+    return new Promise(function (res) {
+      try {
+        var r = indexedDB.open('animal-express-booth', 1);
+        r.onupgradeneeded = function () { r.result.createObjectStore('takes'); };
+        r.onsuccess = function () { db = r.result; res(); };
+        r.onerror = function () { res(); };
+      } catch (e) { res(); }
+    });
+  }
+  function dbPut(key) {
+    try {
+      if (!db) return;
+      var s = st(key), plain = {};
+      Object.keys(s.takes).forEach(function (n) { plain[n] = { blob: s.takes[n].blob, mime: s.takes[n].mime }; });
+      db.transaction('takes', 'readwrite').objectStore('takes').put({ takes: plain, kept: s.kept }, locale() + '|' + key);
+    } catch (e) { /* ignore */ }
+  }
+  function dbLoadAll() {
+    return new Promise(function (res) {
+      try {
+        if (!db) return res();
+        state = {};
+        var pre = locale() + '|';
+        var req = db.transaction('takes').objectStore('takes').openCursor();
+        req.onsuccess = function () {
+          var c = req.result;
+          if (!c) return res();
+          if (String(c.key).indexOf(pre) === 0) {
+            var key = String(c.key).slice(pre.length), s = st(key);
+            Object.keys(c.value.takes).forEach(function (n) {
+              var t = c.value.takes[n];
+              s.takes[n] = { blob: t.blob, mime: t.mime, url: URL.createObjectURL(t.blob) };
+            });
+            s.kept = c.value.kept;
+          }
+          c.continue();
+        };
+        req.onerror = function () { res(); };
+      } catch (e) { res(); }
+    });
+  }
+
+  // ---------- rendering ----------
+  var rowEls = {};
+  function render() {
+    var list = $('list');
+    list.textContent = '';
+    rowEls = {};
+    DATA.scenes.forEach(function (sc) {
+      var h = document.createElement('h2'); h.textContent = sc.title; list.appendChild(h);
+      if (sc.note) { var p = document.createElement('p'); p.className = 'scenenote'; p.textContent = sc.note; list.appendChild(p); }
+      sc.rows.forEach(function (r) { var el = buildRow(r); rowEls[r.key] = el; list.appendChild(el); });
+    });
+    DATA.scenes.forEach(function (sc) { sc.rows.forEach(function (r) { refreshRow(r.key); }); });
+    updateProgress();
+  }
+  function meta(label, value) {
+    if (!value) return null;
+    var d = document.createElement('div'); d.className = 'meta';
+    var b = document.createElement('b'); b.textContent = label + ': ';
+    d.appendChild(b); d.appendChild(document.createTextNode(value));
+    return d;
+  }
+  function buildRow(r) {
+    var card = document.createElement('section'); card.className = 'card';
+    card.setAttribute('aria-label', r.key);
+    var k = document.createElement('span'); k.className = 'key'; k.textContent = r.key;
+    var t = document.createElement('div'); t.className = 'text'; t.textContent = r.text;
+    card.appendChild(k); card.appendChild(t);
+    [meta('Mood and tone', r.mood), meta('Energy / pace', r.energy), meta('Notes', r.notes)].forEach(function (m) { if (m) card.appendChild(m); });
+    var ctl = document.createElement('div'); ctl.className = 'controls';
+    var btn = document.createElement('button'); btn.type = 'button'; btn.className = 'recbtn';
+    btn.addEventListener('click', function () { toggleRecord(r.key); });
+    ctl.appendChild(btn);
+    card.appendChild(ctl);
+    var ul = document.createElement('ul'); ul.className = 'takes'; card.appendChild(ul);
+    return card;
+  }
+  function refreshRow(key) {
+    var card = rowEls[key]; if (!card) return;
+    var s = st(key), nums = takeNums(key);
+    var btn = card.querySelector('.recbtn');
+    var isRec = recKey === key;
+    btn.textContent = isRec ? 'Stop recording' : (nums.length >= MAX_TAKES ? 'Delete a take to re-record' : 'Record take ' + nextSlot(key));
+    btn.className = 'recbtn' + (isRec ? ' rec recording' : '');
+    btn.setAttribute('aria-label', (isRec ? 'Stop recording ' : 'Record ') + key);
+    btn.disabled = !isRec && (recKey !== null || nums.length >= MAX_TAKES);
+    var ul = card.querySelector('.takes'); ul.textContent = '';
+    nums.forEach(function (n) {
+      var tk = s.takes[n];
+      var li = document.createElement('li');
+      var lab = document.createElement('span'); lab.textContent = 'Take ' + n; lab.style.fontWeight = '700';
+      var au = document.createElement('audio'); au.controls = true; au.src = tk.url; au.setAttribute('aria-label', 'Play take ' + n + ' of ' + key);
+      var kl = document.createElement('label');
+      var rd = document.createElement('input'); rd.type = 'radio'; rd.name = 'keep-' + key; rd.checked = s.kept === n;
+      rd.addEventListener('change', function () { s.kept = n; dbPut(key); refreshRow(key); say('Keeping take ' + n + ' for ' + key); });
+      kl.appendChild(rd); kl.appendChild(document.createTextNode('Keep this take'));
+      var del = document.createElement('button'); del.type = 'button'; del.textContent = 'Delete';
+      del.setAttribute('aria-label', 'Delete take ' + n + ' of ' + key);
+      del.addEventListener('click', function () {
+        try { URL.revokeObjectURL(tk.url); } catch (e) {}
+        delete s.takes[n];
+        if (s.kept === n) s.kept = takeNums(key)[0] || null;
+        dbPut(key); refreshRow(key); updateProgress(); say('Deleted take ' + n + ' of ' + key);
+      });
+      li.appendChild(lab); li.appendChild(au); li.appendChild(kl); li.appendChild(del);
+      ul.appendChild(li);
+    });
+    card.className = 'card' + (nums.length ? ' done' : '');
+  }
+  function refreshAll() { Object.keys(rowEls).forEach(refreshRow); }
+  function updateProgress() {
+    var n = DATA.scenes.reduce(function (c, s) { return c + s.rows.filter(function (r) { return takeNums(r.key).length > 0; }).length; }, 0);
+    $('progress').textContent = n + '/' + total;
+    $('progress').setAttribute('aria-label', n + ' of ' + total + ' lines recorded');
+  }
+  function nextSlot(key) { for (var i = 1; i <= MAX_TAKES; i++) if (!st(key).takes[i]) return i; return null; }
+
+  // ---------- recording ----------
+  function pickMime() {
+    var c = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus'];
+    if (!window.MediaRecorder) return '';
+    for (var i = 0; i < c.length; i++) { try { if (MediaRecorder.isTypeSupported(c[i])) return c[i]; } catch (e) {} }
+    return '';
+  }
+  function startMeter(s) {
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+      audioCtx = audioCtx || new AC();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      var src = audioCtx.createMediaStreamSource(s), an = audioCtx.createAnalyser();
+      an.fftSize = 1024; src.connect(an);
+      var buf = new Uint8Array(an.fftSize);
+      (function tick() {
+        an.getByteTimeDomainData(buf);
+        var peak = 0; for (var i = 0; i < buf.length; i++) peak = Math.max(peak, Math.abs(buf[i] - 128) / 128);
+        var bar = $('meterbar'); bar.style.width = Math.min(100, Math.round(peak * 140)) + '%';
+        bar.style.background = peak > 0.9 ? '#ef4444' : (peak > 0.6 ? '#facc15' : '#4ade80');
+        rafId = requestAnimationFrame(tick);
+      })();
+    } catch (e) { /* meter is optional */ }
+  }
+  function stopMeter() { cancelAnimationFrame(rafId); $('meterbar').style.width = '0'; }
+
+  function toggleRecord(key) {
+    if (recKey === key && recorder) { recorder.stop(); return; }
+    if (recKey) return;
+    var slot = nextSlot(key);
+    if (!slot) { say('Already 3 takes for ' + key + '. Delete one to record again.'); return; }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
+      say('Recording is not available here. Open this page on localhost or https in a recent Chrome, Edge, Firefox or Safari.');
+      return;
+    }
+    navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } }).then(function (s) {
+      stream = s;
+      var mime = pickMime();
+      recorder = mime ? new MediaRecorder(s, { mimeType: mime }) : new MediaRecorder(s);
+      chunks = []; recKey = key;
+      recorder.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
+      recorder.onstop = function () {
+        var type = recorder.mimeType || mime || 'audio/webm';
+        var blob = new Blob(chunks, { type: type });
+        stream.getTracks().forEach(function (t) { t.stop(); });
+        stopMeter();
+        var k = recKey; recKey = null; recorder = null;
+        var sl = nextSlot(k), sobj = st(k);
+        sobj.takes[sl] = { blob: blob, mime: type, url: URL.createObjectURL(blob) };
+        if (!sobj.kept) sobj.kept = sl;
+        dbPut(k); refreshAll(); updateProgress();
+        say('Saved take ' + sl + ' for ' + k + '.');
+        try { rowEls[k].querySelector('.recbtn').focus(); } catch (e) {}
+      };
+      recorder.start();
+      startMeter(s);
+      refreshAll();
+      say('Recording ' + key + ' (take ' + slot + '). Say: ' + textOf(key) + '. Press Stop when done.');
+      rowEls[key].querySelector('.recbtn').focus();
+    }).catch(function (err) {
+      say('Could not use the microphone (' + (err && err.name ? err.name : 'error') + '). Allow microphone access, and use localhost or https.');
+    });
+  }
+  function textOf(key) {
+    for (var i = 0; i < DATA.scenes.length; i++) for (var j = 0; j < DATA.scenes[i].rows.length; j++) if (DATA.scenes[i].rows[j].key === key) return DATA.scenes[i].rows[j].text;
+    return '';
+  }
+
+  // ---------- export ----------
+  function exportZip() {
+    var loc = locale(), files = [], kept = {};
+    var jobs = [];
+    DATA.scenes.forEach(function (sc) { sc.rows.forEach(function (r) {
+      var s = st(r.key);
+      takeNums(r.key).forEach(function (n) { jobs.push({ key: r.key, n: n, t: s.takes[n] }); });
+      if (s.kept) kept[r.key] = s.kept;
+    }); });
+    if (!jobs.length) { say('Nothing recorded yet.'); return; }
+    var left = jobs.length;
+    jobs.forEach(function (j) {
+      var rd = new FileReader();
+      rd.onload = function () {
+        files.push({ name: loc + '/' + j.key + '.take' + j.n + '.' + ext(j.t.mime), data: new Uint8Array(rd.result) });
+        if (--left === 0) finish();
+      };
+      rd.onerror = function () { say('Could not read a recording for export.'); };
+      rd.readAsArrayBuffer(j.t.blob);
+    });
+    function finish() {
+      files.sort(function (a, b) { return a.name < b.name ? -1 : 1; });
+      files.push({ name: loc + '/kept.json', data: new TextEncoder().encode(JSON.stringify(kept, null, 2)) });
+      var zip = makeZip(files);
+      var url = URL.createObjectURL(new Blob([zip], { type: 'application/zip' }));
+      var a = document.createElement('a'); a.href = url; a.download = 'animal-express-recordings-' + loc + '.zip';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 10000);
+      say('Exported ' + jobs.length + ' take(s) in animal-express-recordings-' + loc + '.zip');
+    }
+  }
+
+  $('export').addEventListener('click', exportZip);
+  localeEl.addEventListener('change', function () {
+    if (recKey) { say('Stop recording before changing the language folder.'); return; }
+    dbLoadAll().then(function () { render(); say('Language folder: ' + locale()); });
+  });
+  window.__booth = { DATA: DATA, makeZip: makeZip, crc32: crc32 };
+  dbOpen().then(dbLoadAll).then(function () { render(); say('Ready. ' + total + ' lines to record.'); });
+})();
+</script>
+</body>
+</html>

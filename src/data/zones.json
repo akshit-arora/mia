@@ -1,0 +1,17 @@
+[
+  {
+    "id": "jungle",
+    "nameKey": "zone.jungle",
+    "theme": "jungle"
+  },
+  {
+    "id": "farm",
+    "nameKey": "zone.farm",
+    "theme": "farm"
+  },
+  {
+    "id": "home",
+    "nameKey": "zone.home",
+    "theme": "home"
+  }
+]

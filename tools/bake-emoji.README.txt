@@ -1,0 +1,8 @@
+bake-emoji.mjs - bakes Twemoji SVGs (devDependency @twemoji/svg) into one shared-palette atlas.
+  npm run bake                       -> src/gen/atlas.png + atlas.json (32px cells, 4 cols, <=32 colours, 1px outline)
+  node tools/bake-emoji.mjs --icons  -> also writes public/icon-192.png and icon-512.png
+Options: --size 24  --out path.png  --only lion,cat  --cols 6  --colors 32  --contrast 1.25  --sat 1.2  --sharpen 0.6  --outline 0
+Output is deterministic. Exits non-zero if an entities.json emoji codepoint has no SVG in the package.
+Licence: Twemoji graphics are CC-BY 4.0 (Copyright 2020 Twitter, Inc and other contributors; fork maintained by jdecked).
+The npm wrapper @twemoji/svg is MIT (c) 2023 Samuel Kopp. Credit Twemoji in CREDITS and the About page.
+docs/prototype/ holds the Milestone 0 contact sheets (base = plain, boost = contrast/saturation/sharpen, now the default).

@@ -1,0 +1,28 @@
+{
+  "name": "animal-express",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Animal Express: offline-first PWA of tiny games for children aged 6-7.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --port 4173",
+    "test": "vitest run",
+    "validate": "node tools/validate-pack.mjs",
+    "size": "node tools/check-size.mjs",
+    "bake": "node tools/bake-emoji.mjs",
+    "audio:pack": "node tools/audio-pack.mjs",
+    "check:sources": "node tools/check-sources.mjs",
+    "ci": "npm run validate && npm run check:sources && npm test && npm run build && npm run size"
+  },
+  "devDependencies": {
+    "@twemoji/svg": "^15.0.0",
+    "sharp": "^0.35.5",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.6",
+    "vite-plugin-pwa": "^2.0.0",
+    "vitest": "^4.1.12"
+  },
+  "license": "MIT"
+}

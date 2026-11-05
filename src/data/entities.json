@@ -1,0 +1,315 @@
+[
+  {
+    "id": "lion",
+    "nameKey": "name.lion",
+    "emoji": "1f981",
+    "tags": [
+      "wild",
+      "big-cat"
+    ],
+    "relations": {
+      "livesAt": [
+        "jungle"
+      ]
+    },
+    "accepts": [
+      "jungle"
+    ],
+    "sound": "animal.lion",
+    "captionKey": "cc.animal.lion",
+    "poke": "yawn"
+  },
+  {
+    "id": "tiger",
+    "nameKey": "name.tiger",
+    "emoji": "1f405",
+    "tags": [
+      "wild",
+      "big-cat"
+    ],
+    "relations": {
+      "livesAt": [
+        "jungle"
+      ]
+    },
+    "accepts": [
+      "jungle"
+    ],
+    "sound": "animal.tiger",
+    "captionKey": "cc.animal.tiger",
+    "poke": "stretch"
+  },
+  {
+    "id": "elephant",
+    "nameKey": "name.elephant",
+    "emoji": "1f418",
+    "tags": [
+      "wild",
+      "big"
+    ],
+    "relations": {
+      "livesAt": [
+        "jungle"
+      ]
+    },
+    "accepts": [
+      "jungle"
+    ],
+    "sound": "animal.elephant",
+    "captionKey": "cc.animal.elephant",
+    "poke": "spray",
+    "wonder": {
+      "questionKey": "wonder.q.elephant",
+      "action": "ball",
+      "factKey": "fact.elephant.trunk"
+    }
+  },
+  {
+    "id": "monkey",
+    "nameKey": "name.monkey",
+    "emoji": "1f412",
+    "tags": [
+      "wild"
+    ],
+    "relations": {
+      "livesAt": [
+        "jungle"
+      ]
+    },
+    "accepts": [
+      "jungle"
+    ],
+    "sound": "animal.monkey",
+    "captionKey": "cc.animal.monkey",
+    "poke": "scratch",
+    "wonder": {
+      "questionKey": "wonder.q.monkey",
+      "action": "banana",
+      "factKey": "fact.monkey.banana"
+    }
+  },
+  {
+    "id": "bear",
+    "nameKey": "name.bear",
+    "emoji": "1f43b",
+    "tags": [
+      "wild"
+    ],
+    "relations": {
+      "livesAt": [
+        "jungle"
+      ]
+    },
+    "accepts": [
+      "jungle"
+    ],
+    "sound": "animal.bear",
+    "captionKey": "cc.animal.bear",
+    "poke": "rub"
+  },
+  {
+    "id": "peacock",
+    "nameKey": "name.peacock",
+    "emoji": "1f99a",
+    "tags": [
+      "wild",
+      "bird"
+    ],
+    "relations": {
+      "livesAt": [
+        "jungle"
+      ]
+    },
+    "accepts": [
+      "jungle"
+    ],
+    "sound": "animal.peacock",
+    "captionKey": "cc.animal.peacock",
+    "poke": "fan",
+    "wonder": {
+      "questionKey": "wonder.q.peacock",
+      "action": "fan",
+      "factKey": "fact.peacock.feathers"
+    }
+  },
+  {
+    "id": "cow",
+    "nameKey": "name.cow",
+    "emoji": "1f404",
+    "tags": [
+      "domestic",
+      "farm"
+    ],
+    "relations": {
+      "livesAt": [
+        "farm"
+      ]
+    },
+    "accepts": [
+      "farm"
+    ],
+    "sound": "animal.cow",
+    "captionKey": "cc.animal.cow",
+    "poke": "swish",
+    "noGag": true
+  },
+  {
+    "id": "buffalo",
+    "nameKey": "name.buffalo",
+    "emoji": "1f403",
+    "tags": [
+      "domestic",
+      "farm"
+    ],
+    "relations": {
+      "livesAt": [
+        "farm"
+      ]
+    },
+    "accepts": [
+      "farm"
+    ],
+    "sound": "animal.buffalo",
+    "captionKey": "cc.animal.buffalo",
+    "poke": "roll"
+  },
+  {
+    "id": "goat",
+    "nameKey": "name.goat",
+    "emoji": "1f410",
+    "tags": [
+      "domestic",
+      "farm"
+    ],
+    "relations": {
+      "livesAt": [
+        "farm"
+      ]
+    },
+    "accepts": [
+      "farm"
+    ],
+    "sound": "animal.goat",
+    "captionKey": "cc.animal.goat",
+    "poke": "hop",
+    "wonder": {
+      "questionKey": "wonder.q.goat",
+      "action": "climb",
+      "factKey": "fact.goat.climb"
+    }
+  },
+  {
+    "id": "hen",
+    "nameKey": "name.hen",
+    "emoji": "1f414",
+    "tags": [
+      "domestic",
+      "farm",
+      "bird"
+    ],
+    "relations": {
+      "livesAt": [
+        "farm"
+      ]
+    },
+    "accepts": [
+      "farm"
+    ],
+    "sound": "animal.hen",
+    "captionKey": "cc.animal.hen",
+    "poke": "peck",
+    "wonder": {
+      "questionKey": "wonder.q.hen",
+      "action": "chick",
+      "factKey": "fact.hen.chicks"
+    }
+  },
+  {
+    "id": "horse",
+    "nameKey": "name.horse",
+    "emoji": "1f40e",
+    "tags": [
+      "domestic",
+      "farm"
+    ],
+    "relations": {
+      "livesAt": [
+        "farm"
+      ]
+    },
+    "accepts": [
+      "farm"
+    ],
+    "sound": "animal.horse",
+    "captionKey": "cc.animal.horse",
+    "poke": "trot"
+  },
+  {
+    "id": "dog",
+    "nameKey": "name.dog",
+    "emoji": "1f415",
+    "tags": [
+      "domestic",
+      "pet"
+    ],
+    "relations": {
+      "livesAt": [
+        "home"
+      ]
+    },
+    "accepts": [
+      "home"
+    ],
+    "acceptsAlso": [
+      "farm"
+    ],
+    "sound": "animal.dog",
+    "captionKey": "cc.animal.dog",
+    "poke": "fetch"
+  },
+  {
+    "id": "cat",
+    "nameKey": "name.cat",
+    "emoji": "1f408",
+    "tags": [
+      "domestic",
+      "pet"
+    ],
+    "relations": {
+      "livesAt": [
+        "home"
+      ]
+    },
+    "accepts": [
+      "home"
+    ],
+    "sound": "animal.cat",
+    "captionKey": "cc.animal.cat",
+    "poke": "lick",
+    "wonder": {
+      "questionKey": "wonder.q.cat",
+      "action": "purr",
+      "factKey": "fact.cat.purr"
+    }
+  },
+  {
+    "id": "rabbit",
+    "nameKey": "name.rabbit",
+    "emoji": "1f407",
+    "tags": [
+      "domestic",
+      "pet"
+    ],
+    "relations": {
+      "livesAt": [
+        "home"
+      ]
+    },
+    "accepts": [
+      "home"
+    ],
+    "sound": "animal.rabbit",
+    "captionKey": "cc.animal.rabbit",
+    "poke": "nibble"
+  }
+]

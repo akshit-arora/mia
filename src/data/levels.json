@@ -1,0 +1,412 @@
+[
+  {
+    "id": "intro-jungle",
+    "mechanic": "deliver",
+    "order": 0.1,
+    "prereq": null,
+    "lens": "lives-at",
+    "targets": [
+      "jungle"
+    ],
+    "itemQuery": {
+      "pool": [
+        "lion"
+      ]
+    },
+    "count": 1,
+    "distractors": 0,
+    "accept": "strict",
+    "reveal": "full",
+    "hintProfile": "intro",
+    "pace": 1,
+    "introEntities": [
+      "lion"
+    ],
+    "surpriseSlot": false,
+    "teaches": [
+      "drag"
+    ],
+    "estDuration": 30,
+    "unlockRule": {
+      "cleanRuns": 2
+    },
+    "reward": "park-resident",
+    "promptId": "drag.prompt",
+    "intro": true
+  },
+  {
+    "id": "intro-farm",
+    "mechanic": "deliver",
+    "order": 0.2,
+    "prereq": "intro-jungle",
+    "lens": "lives-at",
+    "targets": [
+      "farm",
+      "jungle"
+    ],
+    "itemQuery": {
+      "pool": [
+        "cow"
+      ]
+    },
+    "count": 1,
+    "distractors": 0,
+    "accept": "strict",
+    "reveal": "full",
+    "hintProfile": "intro",
+    "pace": 1,
+    "introEntities": [
+      "cow"
+    ],
+    "surpriseSlot": false,
+    "teaches": [
+      "drag"
+    ],
+    "estDuration": 30,
+    "unlockRule": {
+      "cleanRuns": 2
+    },
+    "reward": "park-resident",
+    "promptId": "drag.prompt",
+    "intro": true
+  },
+  {
+    "id": "intro-home",
+    "mechanic": "deliver",
+    "order": 0.3,
+    "prereq": "intro-farm",
+    "lens": "lives-at",
+    "targets": [
+      "farm",
+      "jungle",
+      "home"
+    ],
+    "itemQuery": {
+      "pool": [
+        "dog"
+      ]
+    },
+    "count": 1,
+    "distractors": 0,
+    "accept": "strict",
+    "reveal": "full",
+    "hintProfile": "intro",
+    "pace": 1,
+    "introEntities": [
+      "dog"
+    ],
+    "surpriseSlot": false,
+    "teaches": [
+      "drag"
+    ],
+    "estDuration": 30,
+    "unlockRule": {
+      "cleanRuns": 2
+    },
+    "reward": "park-resident",
+    "promptId": "drag.prompt",
+    "intro": true
+  },
+  {
+    "id": "1",
+    "mechanic": "deliver",
+    "order": 1,
+    "prereq": "intro-home",
+    "lens": "lives-at",
+    "targets": [
+      "farm"
+    ],
+    "itemQuery": {
+      "pool": [
+        "cow",
+        "hen",
+        "goat"
+      ]
+    },
+    "count": 3,
+    "distractors": 0,
+    "accept": "strict",
+    "reveal": "full",
+    "hintProfile": "standard",
+    "pace": 1,
+    "introEntities": [],
+    "surpriseSlot": false,
+    "teaches": [
+      "drag"
+    ],
+    "estDuration": 90,
+    "unlockRule": {
+      "cleanRuns": 2
+    },
+    "reward": "park-resident",
+    "promptId": "drag.prompt",
+    "replayOnly": true
+  },
+  {
+    "id": "2",
+    "mechanic": "deliver",
+    "order": 2,
+    "prereq": "intro-home",
+    "lens": "lives-at",
+    "targets": [
+      "jungle"
+    ],
+    "itemQuery": {
+      "pool": [
+        "lion",
+        "monkey",
+        "tiger"
+      ]
+    },
+    "count": 3,
+    "distractors": 0,
+    "accept": "strict",
+    "reveal": "full",
+    "hintProfile": "standard",
+    "pace": 1,
+    "introEntities": [],
+    "surpriseSlot": false,
+    "teaches": [
+      "drag"
+    ],
+    "estDuration": 90,
+    "unlockRule": {
+      "cleanRuns": 2
+    },
+    "reward": "park-resident",
+    "promptId": "drag.prompt",
+    "replayOnly": true
+  },
+  {
+    "id": "3",
+    "mechanic": "deliver",
+    "order": 3,
+    "prereq": "intro-home",
+    "lens": "lives-at",
+    "targets": [
+      "farm",
+      "jungle"
+    ],
+    "itemQuery": {
+      "pool": [
+        "cow",
+        "lion",
+        "hen",
+        "tiger"
+      ]
+    },
+    "count": 6,
+    "distractors": 0,
+    "accept": "strict",
+    "reveal": "full",
+    "hintProfile": "standard",
+    "pace": 1,
+    "introEntities": [],
+    "surpriseSlot": false,
+    "teaches": [
+      "choose-between-two"
+    ],
+    "estDuration": 90,
+    "unlockRule": {
+      "cleanRuns": 2
+    },
+    "reward": "park-resident",
+    "promptId": "drag.prompt"
+  },
+  {
+    "id": "4",
+    "mechanic": "deliver",
+    "order": 4,
+    "prereq": "3",
+    "lens": "lives-at",
+    "targets": [
+      "farm",
+      "jungle"
+    ],
+    "itemQuery": {
+      "pool": [
+        "goat",
+        "monkey",
+        "buffalo",
+        "bear",
+        "hen",
+        "peacock"
+      ]
+    },
+    "count": 7,
+    "distractors": 0,
+    "accept": "strict",
+    "reveal": "full",
+    "hintProfile": "standard",
+    "pace": 1,
+    "introEntities": [],
+    "surpriseSlot": false,
+    "teaches": [
+      "six-animals"
+    ],
+    "estDuration": 90,
+    "unlockRule": {
+      "cleanRuns": 2
+    },
+    "reward": "park-resident",
+    "promptId": "drag.prompt"
+  },
+  {
+    "id": "5",
+    "mechanic": "deliver",
+    "order": 5,
+    "prereq": "intro-home",
+    "lens": "lives-at",
+    "targets": [
+      "home"
+    ],
+    "itemQuery": {
+      "pool": [
+        "dog",
+        "cat",
+        "rabbit"
+      ]
+    },
+    "count": 3,
+    "distractors": 0,
+    "accept": "strict",
+    "reveal": "full",
+    "hintProfile": "standard",
+    "pace": 1,
+    "introEntities": [],
+    "surpriseSlot": false,
+    "teaches": [
+      "drag"
+    ],
+    "estDuration": 90,
+    "unlockRule": {
+      "cleanRuns": 2
+    },
+    "reward": "park-resident",
+    "promptId": "drag.prompt",
+    "replayOnly": true
+  },
+  {
+    "id": "6",
+    "mechanic": "deliver",
+    "order": 6,
+    "prereq": "4",
+    "lens": "lives-at",
+    "targets": [
+      "home",
+      "jungle"
+    ],
+    "itemQuery": {
+      "pool": [
+        "dog",
+        "lion",
+        "cat",
+        "tiger",
+        "monkey"
+      ]
+    },
+    "count": 7,
+    "distractors": 0,
+    "accept": "strict",
+    "reveal": "full",
+    "hintProfile": "standard",
+    "pace": 1,
+    "introEntities": [],
+    "surpriseSlot": false,
+    "teaches": [
+      "pets-vs-wild"
+    ],
+    "estDuration": 90,
+    "unlockRule": {
+      "cleanRuns": 2
+    },
+    "reward": "park-resident",
+    "promptId": "drag.prompt"
+  },
+  {
+    "id": "7",
+    "mechanic": "deliver",
+    "order": 7,
+    "prereq": "6",
+    "lens": "lives-at",
+    "targets": [
+      "farm",
+      "jungle",
+      "home"
+    ],
+    "itemQuery": {
+      "pool": [
+        "dog",
+        "cow",
+        "lion",
+        "cat",
+        "hen",
+        "tiger"
+      ]
+    },
+    "count": 8,
+    "distractors": 0,
+    "accept": "strict",
+    "reveal": "full",
+    "hintProfile": "standard",
+    "pace": 1,
+    "introEntities": [],
+    "surpriseSlot": true,
+    "teaches": [
+      "three-targets"
+    ],
+    "estDuration": 90,
+    "unlockRule": {
+      "cleanRuns": 2
+    },
+    "reward": "park-resident",
+    "promptId": "drag.prompt"
+  },
+  {
+    "id": "8",
+    "mechanic": "deliver",
+    "order": 8,
+    "prereq": "7",
+    "lens": "lives-at",
+    "targets": [
+      "farm",
+      "jungle",
+      "home"
+    ],
+    "itemQuery": {
+      "pool": [
+        "dog",
+        "cow",
+        "lion",
+        "cat",
+        "hen",
+        "tiger",
+        "goat",
+        "monkey",
+        "buffalo",
+        "rabbit"
+      ],
+      "guests": [
+        "elephant",
+        "horse"
+      ]
+    },
+    "count": 10,
+    "distractors": 0,
+    "accept": "strict",
+    "reveal": "full",
+    "hintProfile": "standard",
+    "pace": 1.3,
+    "introEntities": [],
+    "surpriseSlot": true,
+    "teaches": [
+      "fluency"
+    ],
+    "estDuration": 90,
+    "unlockRule": {
+      "cleanRuns": 2
+    },
+    "reward": "park-resident",
+    "promptId": "drag.prompt"
+  }
+]
