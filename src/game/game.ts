@@ -43,7 +43,7 @@ export class Game {
     p.sessions++;
     this.save();
     if (!p.introDone) {
-      await this.say('app.welcome');
+      void this.say('app.welcome');
       for (const id of ['intro-jungle', 'intro-farm', 'intro-home']) {
         const lv = levels.find((l) => l.id === id)!;
         await this.playLevel(lv);
@@ -53,8 +53,7 @@ export class Game {
       const free = levels.find((l) => l.id === '3')!;
       await this.playLevel(free, 4);
     } else {
-      await this.say('app.welcome');
-      await this.newArrival();
+      void this.say('app.welcome');
       const plan = planSession(levels, p, this.rng);
       if (plan.review) await this.playLevel(plan.review, Math.min(plan.review.count, 5));
       await this.playLevel(plan.fresh);
@@ -62,27 +61,7 @@ export class Game {
     await this.sunset();
   }
 
-  /** The park opens as it was left, plus one new arrival. */
-  private async newArrival(): Promise<void> {
-    const p = this.progress;
-    if (!p.park.length) return;
-    const all = this.pack.levels.filter((l) => !l.intro && this.levelOpen(l)).reduce((a: string[], l) => a.concat(l.itemQuery.pool, l.itemQuery.guests || []), []);
-    const cand = [...new Set(all)].filter((id) => !p.park.includes(id));
-    if (!cand.length) return;
-    const id = cand[Math.floor(this.rng() * cand.length)];
-    const e = this.ents.get(id)!;
-    this.show(e.accepts[0]);
-    addResident(p, id); this.world.rebuild(p.park); this.save();
-    audio.sfx('sparkle');
-    const r = this.world.residents[this.world.residents.length - 1];
-    if (r) this.world.sparkles.push({ ...this.world.slotPos(r), t0: this.now() });
-    await this.say('park.grow');
-  }
-  private levelOpen(l: LevelConfig): boolean {
-    if (!l.prereq) return true;
-    const pre = this.pack.levels.find((x) => x.id === l.prereq);
-    return !pre || pre.intro ? this.progress.introDone : (this.progress.cleanRuns[pre.id] ?? 0) >= pre.unlockRule.cleanRuns;
-  }
+  // The town only ever grows when the child delivers an animal: no free arrivals.
   private show(zone: string) { this.world.visible.add(zone); }
 
   private async playLevel(level: LevelConfig, count?: number): Promise<void> {
@@ -110,19 +89,19 @@ export class Game {
       w.truck.x = -80;
       audio.sfx('truck');
       const run = st.tween(1100 / level.pace, (t) => { w.truck.x = -80 + 90 * t; w.truck.bounce = st.reduced ? 0 : Math.sin(t * 40) * 0.7; });
-      if (index === 0) { audio.sfx('honk'); await this.say('truck.arrive'); }
+      // talk while the truck drives: never make the child wait for a voice line
+      if (index === 0) { audio.sfx('honk'); void this.say('truck.arrive'); }
       await run; w.truck.bounce = 0;
     }
     // 2. mystery crate: hear it first, see it shake, then pop
     {
       audio.sfx('crate');
       const shake = st.reduced ? Promise.resolve() : st.tween(900, (t) => { w.crateShake = Math.sin(t * 38) * 2 * (1 - t * 0.3); }, (t) => t);
-      if (index === 0) this.say('crate.shake');
       await this.sleep(300);
       audio.animal(e.id);
       audio.vibrate(40);
       await shake; w.crateShake = 0;
-      await this.sleep(quick ? 350 : 600);
+      await this.sleep(quick ? 250 : 300);
     }
     // 3. reveal
     audio.sfx('pop');
@@ -132,9 +111,10 @@ export class Game {
     await st.tween(450, (t) => { w.resting!.y = restY - Math.sin(t * Math.PI) * 18; });
     w.resting.y = restY;
     w.sparkles.push({ x: restX, y: restY - 20, t0: this.now() });
-    if (index === 0 && level.intro) await this.say('crate.open');
-    await this.say(e.nameKey);
-    if (index === 0) this.say('drag.prompt');
+    // the child can grab the animal right away; the voice keeps talking meanwhile
+    if (index === 0 && level.intro) void this.say('crate.open');
+    void this.say(e.nameKey);
+    if (index === 0) void this.say('drag.prompt');
 
     // 4. the child's turn
     let wrongs = 0;
@@ -171,6 +151,7 @@ export class Game {
   private async success(level: LevelConfig, e: Entity, zoneId: string, firstTry: boolean, index: number): Promise<void> {
     const w = this.world, st = this.stage, p = this.progress;
     w.highlight = zoneId; w.pulse = false;
+    audio.flush(); // the child moved on: drop any voice lines still waiting
     const added = addResident(p, e.id);
     // slot where it will live
     const ghostRes: Res = { id: e.id, zone: zoneId, slot: w.residents.filter((r) => r.zone === zoneId).length };
@@ -373,7 +354,7 @@ export class Game {
     w.sleeping = true;
     audio.sfx('sleep');
     audio.ambience(Math.min(1, this.progress.park.length / 24));
-    const ending = this.say('day.end');
+    const ending = (async () => { await this.say('day.done'); await this.say('day.end'); })();
     await st.tween(3200, (t) => { w.night = t; }, (t) => t);
     await ending;
     // a sealed crate rattles with a "?"

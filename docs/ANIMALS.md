@@ -28,7 +28,7 @@ Notes:
 - **Face-only emoji** (lion, bear) are the weakest at 24 px; they are the first candidates for hand-pixelled replacements.
 - **Cat vs tiger** look alike at small size. The prototype (Milestone 0) must check stripes and silhouette.
 - Peacock and elephant are good Indian-context anchors. Bear is a brown bear in emoji; a sloth bear would need custom art later.
-- Horse and elephant are held back as "new arrival" guests so each session still has one surprise.
+- Horse and elephant are held back as occasional guests in later levels, so there is still a surprise.
 
 ## 2. Sounds and captions
 

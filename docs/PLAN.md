@@ -75,7 +75,7 @@ Each chapter is a **place with a verb**, never a subject label. The town grows v
 The intro compresses the single-target levels (1, 2 and 5) into the first minute and a half. The ladder proper continues from level 3.
 
 ### 4.4 Later sessions
-- The park opens exactly as it was left, plus one new arrival.
+- The park opens exactly as it was left. Animals only join by being delivered; none appears on its own.
 - Each session is one review level plus one new level. A level unlocks after two clean runs. Missed animals return quietly later, never as a "retry".
 - Every third session ends with a surprise guest.
 - Silent adaptation: a hidden per-animal confidence (based on first-try drops, never speed) picks the next animals. Hesitation is treated as curiosity and triggers an invitation to poke the park, not a hint.

@@ -50,7 +50,7 @@
   "fact.hen.chicks": "Hens keep chicks warm!",
   "fact.cat.purr": "Cats purr when they are happy!",
 
-  "park.grow": "Our town is growing!",
+  "day.done": "Day done. Great job!",
   "day.end": "Time to rest now.",
   "day.tomorrow": "See you tomorrow!",
 
@@ -91,6 +91,7 @@
   "cc.speaker.chiku": "Chiku the sparrow",
 
   "ui.go": "Go",
+  "ui.tomorrow": "Tomorrow",
   "ui.sound.on": "Sound on",
   "ui.sound.off": "Sound off",
   "ui.cc": "Captions",

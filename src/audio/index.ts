@@ -36,6 +36,7 @@ let unlockedListeners = false;
 let captionCb: ((e: CaptionEvent) => void) | null = null;
 let speaking = 0;
 let queued = 0;
+let gen = 0; // bumped by flush(): lines queued before it are skipped
 let chain: Promise<void> = Promise.resolve();
 const speechPacks: Record<string, Pack> = {};
 let animalPack: Pack | null = null;
@@ -336,7 +337,11 @@ export const audio = {
 
   onCaption(cb: (e: CaptionEvent) => void): void { captionCb = cb; },
 
+  /** Drop voice lines that are still waiting their turn (the one speaking finishes). */
+  flush(): void { gen++; },
+
   say(key: string, speaker: Speaker): Promise<void> {
+    const mine = gen;
     if (queued === 0) {
       // idle: start immediately so the caption event is emitted synchronously
       queued++;
@@ -345,7 +350,7 @@ export const audio = {
       return p;
     }
     queued++;
-    const p = chain.then(() => runSay(key, speaker)).then(() => { queued--; }, (e) => { queued--; throw e; });
+    const p = chain.then(() => (mine === gen ? runSay(key, speaker) : undefined)).then(() => { queued--; }, (e) => { queued--; throw e; });
     chain = p;
     return p;
   },

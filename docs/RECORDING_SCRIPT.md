@@ -142,7 +142,7 @@ Everything slows down. Warm, quiet and sleepy. Start of the first line is still 
 
 | Key | Say exactly | Mood and tone | Energy / pace | Notes |
 |---|---|---|---|---|
-| `park.grow` | Our town is growing! | Proud, warm | 3, about 10% slower | |
+| `day.done` | Day done. Great job! | Proud, warm | 3, about 10% slower | Say it like a well-done hug |
 | `day.end` | Time to rest now. | Soft, sleepy, like a bedtime | 2, about 20% slower | Lower your pitch a little |
 | `day.tomorrow` | See you tomorrow! | A whisper-smile | 2, slow | End on a soft, rising note |
 

@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 
 const PROJECT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-// The 45 spoken keys, taken from the table rows of docs/RECORDING_SCRIPT.md.
+// The spoken keys, taken from the table rows of docs/RECORDING_SCRIPT.md.
 export const SPOKEN_KEYS = [
   'app.tap_truck', 'app.welcome', 'truck.honk', 'truck.arrive', 'crate.shake', 'crate.open',
   'name.lion', 'name.tiger', 'name.elephant', 'name.monkey', 'name.bear', 'name.peacock',
@@ -22,7 +22,7 @@ export const SPOKEN_KEYS = [
   'correct.2', 'correct.3', 'wrong.gentle', 'wrong.hint', 'wonder.appear', 'wonder.ask',
   'wonder.tap', 'discover.wow', 'discover.again', 'sticker.new', 'fact.elephant.trunk',
   'fact.monkey.banana', 'fact.peacock.feathers', 'fact.goat.climb', 'fact.hen.chicks',
-  'fact.cat.purr', 'park.grow', 'day.end', 'day.tomorrow'
+  'fact.cat.purr', 'day.done', 'day.end', 'day.tomorrow'
 ];
 export const ANIMAL_IDS = ['lion', 'tiger', 'elephant', 'monkey', 'bear', 'peacock', 'cow', 'buffalo', 'goat', 'hen', 'horse', 'dog', 'cat', 'rabbit'];
 const SPEECH_EXT = ['wav', 'm4a', 'mp4', 'webm', 'mp3', 'ogg'];

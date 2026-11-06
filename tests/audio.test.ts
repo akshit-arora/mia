@@ -77,6 +77,16 @@ describe('facade in node (no AudioContext)', () => {
     expect(order).toEqual(['a', 'b']);
     expect(events.map((e) => e.key)).toEqual(['truck.honk', 'crate.shake']);
   });
+  it('flush drops lines still waiting, but not the one speaking or later ones', async () => {
+    const events: CaptionEvent[] = [];
+    audio.onCaption((e) => events.push(e));
+    const a = audio.say('truck.honk', 'bholu');
+    const b = audio.say('crate.shake', 'chiku'); // waiting
+    audio.flush();
+    const c = audio.say('correct.3', 'bholu'); // after the flush
+    await Promise.all([a, b, c]);
+    expect(events.map((e) => e.key)).toEqual(['truck.honk', 'correct.3']);
+  });
   it('sfx and animal captions; hop/tick/whoosh silent; unknown ignored', () => {
     const events: CaptionEvent[] = [];
     audio.onCaption((e) => events.push(e));

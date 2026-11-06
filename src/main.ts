@@ -54,8 +54,9 @@ async function boot() {
     snd.setAttribute('aria-label', s.muted ? t('ui.sound.off') : t('ui.sound.on'));
     $('b-cc').setAttribute('aria-label', `${t('ui.cc')}: ${t('parent.captions.' + s.captions)}`);
     $('b-par').setAttribute('aria-label', t('ui.parent'));
-    $('go').setAttribute('aria-label', t('ui.go'));
-    $('go-label').textContent = t('ui.go');
+    const goKey = world.night > 0 ? 'ui.tomorrow' : 'ui.go';
+    $('go').setAttribute('aria-label', t(goKey));
+    $('go-label').textContent = t(goKey);
     $('turn').querySelector('svg')!.setAttribute('aria-label', t('ui.turn'));
     refreshCaptions();
     stage.invalidate();
@@ -114,6 +115,10 @@ async function boot() {
   const go = $('go');
   const waitForGo = (): Promise<void> => new Promise((res) => {
     go.hidden = false;
+    // after the evening the button says "Tomorrow", so it is clear the day is finished
+    const goKey = world.night > 0 ? 'ui.tomorrow' : 'ui.go';
+    $('go-label').textContent = t(goKey);
+    go.setAttribute('aria-label', t(goKey));
     go.focus({ preventScroll: true });
     world.truck.show = true;
     let alive = world.night === 0;

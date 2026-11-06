@@ -133,7 +133,7 @@ Source of truth for scope: PLAN.md, ANIMALS.md, RECORDING_SCRIPT.md. All tasks s
 | L-02 | Levels 3 to 8 runtime, replay pools, ten-animal level with guests | ORCH | L-01, C-07 | Every level reachable; unlock after two clean runs | todo |
 | L-03 | Mystery crate (sound first) with caption and visible shake; wrong drop as gentle experiment | ORCH | L-02, U-02 | Silent run still readable; no wrong-drop reaction for the cow | todo |
 | L-04 | Sunset ending, sealed "?" crate, no score shown | ORCH | L-02 | No number, star or counter anywhere (text scan) | todo |
-| L-05 | Park persistence, one new arrival per session, picture sticker book without counter | ORCH | C-08, L-02 | Park reopens as left | todo |
+| L-05 | Park persistence, picture sticker book without counter | ORCH | C-08, L-02 | Park reopens as left | todo |
 | L-06 | Poke reactions wired for all 14 animals | ORCH | A-04 | Each animal reacts once per tap | todo |
 | L-07 | Wonder Bubbles for 6 animals, about 1 drop in 3, behind a feature flag until review | ORCH | C-06, L-06 | Flag off by default until C-05 is yes; never every time | todo |
 | L-08 | Surprise guests, about 1 crate in 12, every third session | ORCH | L-02 | Rate verified over 1000 simulated crates | todo |
