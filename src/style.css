@@ -19,6 +19,10 @@ canvas:focus-visible { outline:3px solid var(--accent); outline-offset:-3px; }
 
 #hud { position:absolute; right:6px; bottom:6px; display:flex; gap:8px; z-index:4; line-height:1; }
 .hud-btn { position:relative; width:56px; height:56px; min-width:56px; border-radius:50%; border:3px solid var(--ink); background:var(--paper); color:var(--ink); font:700 15px/1 system-ui, sans-serif; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0; overflow:hidden; }
+/* while a game is open: smaller, faded, top right (the bottom right belongs to the game's lanes and cards) */
+body.ingame #hud { top:max(4px, env(safe-area-inset-top)); bottom:auto; right:max(6px, env(safe-area-inset-right)); gap:6px; opacity:.55; }
+body.ingame .hud-btn { width:40px; height:40px; min-width:40px; font-size:12px; border-width:2px; }
+body.ingame #hud:hover, body.ingame #hud:focus-within { opacity:1; }
 .hud-btn:focus-visible, .go:focus-visible, .parent button:focus-visible, .parent input:focus-visible, .parent summary:focus-visible { outline:4px solid #7a3fd0; outline-offset:2px; }
 .hud-btn[aria-pressed="false"] { background:#ddd; }
 #b-snd::before { content:""; width:22px; height:22px; background:center/contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 9h4l5-4v14l-5-4H3z' fill='%23181020'/%3E%3Cpath d='M15 8q3 4 0 8M18 5q6 7 0 14' fill='none' stroke='%23181020' stroke-width='2'/%3E%3C/svg%3E"); }
@@ -49,3 +53,25 @@ canvas:focus-visible { outline:3px solid var(--accent); outline-offset:-3px; }
 .parent .help { margin:.4em 0 0; font-size:14px; color:#333; }
 .parent .close { margin-top:8px; background:var(--accent); }
 .hc .parent .panel { border:4px solid #000; }
+
+/* ---- MIA card game (index.html). --u = CSS px per logical canvas px, set by the shell ---- */
+#ui { position:absolute; inset:0; z-index:2; line-height:1; }
+.game-root { position:absolute; inset:0; }
+.hot { position:absolute; transform:translate(-50%,-50%); min-width:56px; min-height:56px; padding:0; margin:0; border:0; background:transparent; border-radius:12px; cursor:pointer; color:var(--ink); }
+.hot:focus-visible { outline:4px solid #7a3fd0; outline-offset:2px; background:rgba(255,255,255,.28); }
+.hot:active { background:rgba(255,255,255,.3); }
+.hot.back, .hot.exit { min-width:56px; min-height:56px; background:var(--paper); border:3px solid var(--ink); border-radius:50%; display:flex; align-items:center; justify-content:center; }
+.hot.back svg { width:60%; height:60%; }
+.cardname { position:absolute; transform:translate(-50%,-50%); background:var(--paper); color:var(--ink); border:calc(var(--u,2px)*1) solid var(--ink); border-radius:999px; font:800 calc(var(--u,2px)*9)/1.1 system-ui, sans-serif; text-align:center; padding:.1em .2em; white-space:nowrap; pointer-events:none; overflow:hidden; text-overflow:ellipsis; }
+/* reveal overlay */
+.rv { position:absolute; inset:0; z-index:6; pointer-events:none; line-height:1; }
+.rv-name { position:absolute; transform:translate(-50%,-50%); text-align:center; font:900 calc(var(--u,2px)*13)/1 system-ui, sans-serif; color:var(--ink); background:var(--accent); border:calc(var(--u,2px)*1.5) solid var(--ink); border-radius:999px; padding:.1em .4em; white-space:nowrap; animation:ccin .25s ease-out; }
+.rv-banner { position:absolute; transform:translate(-50%,-50%); text-align:center; font:900 calc(var(--u,2px)*10)/1 system-ui, sans-serif; color:var(--ink); background:var(--c,#ffd93d); border:calc(var(--u,2px)*1.5) solid var(--ink); border-radius:999px; padding:.1em .5em; white-space:nowrap; animation:ccin .25s ease-out; }
+.rv-name[hidden], .rv-banner[hidden] { display:none; }
+.rv-skip { position:absolute !important; right:auto; bottom:auto; transform:translate(-50%,-50%); pointer-events:auto; width:56px; height:56px; opacity:.85; }
+.rv-skip svg { position:relative; width:55%; height:55%; }
+.reduced .rv-name, .reduced .rv-banner { animation:none; }
+.parent a.parent-link { display:inline-flex; align-items:center; min-height:44px; padding:6px 14px; border-radius:10px; border:2px solid var(--ink); background:var(--accent); color:var(--ink); font:700 16px system-ui, sans-serif; text-decoration:none; }
+.parent a.parent-link:focus-visible { outline:4px solid #7a3fd0; outline-offset:2px; }
+.hc .hot:focus-visible { outline-color:#000; outline-width:5px; }
+.hc .hot.back { border-width:4px; border-color:#000; }

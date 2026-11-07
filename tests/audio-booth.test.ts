@@ -52,12 +52,12 @@ describe('zip writer', () => {
 describe('recording booth', () => {
   const data = JSON.parse(/<script id="data" type="application\/json">([\s\S]*?)<\/script>/.exec(html)![1]);
   const rows = data.scenes.flatMap((s: any) => s.rows);
-  it('embeds all 51 keys, matching docs/RECORDING_SCRIPT.md', () => {
-    expect(rows).toHaveLength(51);
+  it('embeds all 115 keys, matching docs/RECORDING_SCRIPT.md', () => {
+    expect(rows).toHaveLength(115);
     const script = fs.readFileSync(path.join(root, 'docs/RECORDING_SCRIPT.md'), 'utf8');
     const keys = [...script.matchAll(/^\| `([a-z_.0-9]+)` \|/gm)].map((m) => m[1]);
     expect(rows.map((r: any) => r.key)).toEqual(keys);
-    expect(data.scenes).toHaveLength(10);
+    expect(data.scenes).toHaveLength(18);
   });
   it('texts equal locale strings; scene C has the discovery note', () => {
     const en = JSON.parse(fs.readFileSync(path.join(root, 'src/locales/en.json'), 'utf8'));

@@ -6,7 +6,7 @@ Sorted by what blocks what. Times are rough. "Why not an agent" is the reason a 
 
 1. **Now (30 min total, unblocks the build):** H1, H2, H3
 2. **This week (needs a phone and a teacher):** H4, H5, H6
-3. **While the agents build (parallel, slow, start early):** H7, H11
+3. **While the agents build (parallel, slow, start early):** H7, H11, H20, H21
 4. **After teacher says yes and audio pipeline exists:** H9, H10
 5. **Outward-facing:** H12
 6. **Before release:** H13, H14, H15, H17
@@ -124,6 +124,28 @@ Sorted by what blocks what. Times are rough. "Why not an agent" is the reason a 
 - **Do:** A native speaker (and a teacher) reviews all strings, the names Bholu, Chiku, Chhotu-Nagar and the zone words. A Hindi speaker records the lines via the booth. Repeat the whole process for any later language.
 - **Why not an agent:** correctness and warmth of a language need native judgement; a wrong word in front of children is worse than none.
 - **Unblocks:** M2-10, M2-11. Do not release any non-English pack without it.
+
+## Stage 3 (the card games): what only you can do
+
+### H19. Record the new voice lines by scene (about 2 hours, plus retakes)
+- **Do:** Open `tools/booth/recording-booth.html` (115 keys now). Record the card-game scenes in this order: K (14 card name lines, one sitting), L (food), M (home), N (shelf and door lines), O (Forage Trail, 3), P (Morning Round, 3), Q (Play Yard, 4), R (Card clash, 7). Then `npm run audio:pack`.
+- **Why not an agent:** the voice is yours (D10). Every line also appears as a caption, so what you say is what a deaf child reads.
+- **Unblocks:** every game shows captions only (or synthesized speech) until then.
+
+### H20. Review the flagged facts (30 min, a teacher if you can)
+- **Do:** Open `src/data/cards.json` and read every entry with `review: true` and its `reviewNote`: lion and tiger with a plain covered bowl and "Lions eat meat!", bear and honey, elephant and sugarcane, "cats love milk", "dogs love bones", the horse as a farm animal, the lion and tiger home called "jungle".
+- **Why not an agent:** these are judgement calls about what is true enough and kind enough for a child.
+
+### H21. Approve the names and the numbers (20 min)
+- **Do:** The 14 names (Sheru, Veeru, Gajju, Bunty, Balu, Neelu, Gauri, Kalu, Chintu, Kuku, Chetak, Moti, Mini, Bittu) in `cards.json`; the three powers per card (two stored per animal) and the shared "cuddly" score in `src/games/trump/logic.ts` (`CUDDLY`). All are drafts, deliberately silly, not science. Check no name is awkward in a region you care about.
+- **Why not an agent:** names cascade into recordings, captions and cards.
+
+### H22. Hear the sounds (20 min on a phone speaker)
+- **Do:** Play each game and Card clash with sound on. Listen for anything harsh, too loud, or annoying when repeated: the pickup notes, the door creak, the win chime, the "shrug" slide, the cheer. All are synthesized and untested by ear. Say which to change.
+- **Why not an agent:** nobody has heard them yet.
+
+### H23. Run the phone test (see docs/PHONE_TEST.md)
+- **Do:** Follow the 10-minute observation with a 6-year-old (no quizzing) and fill in the signals and the kill/revise verdict.
 
 ## Optional
 

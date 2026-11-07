@@ -1,0 +1,229 @@
+{
+ "_comment": "Card data. Names, stats, foods and homes are drafts for owner and teacher review (all stats are deliberately exaggerated play numbers). Icons: src/data/card-icons.json. Locale keys: card.name.<id>, card.say.<id>, card.food.<id>, card.home.<id>, food.<food>, home.<home>, type.<type>.",
+ "version": 1,
+ "shelves": [
+  "jungle",
+  "farm",
+  "house"
+ ],
+ "types": [
+  "wild",
+  "farm",
+  "pet"
+ ],
+ "statKinds": [
+  "size",
+  "speed",
+  "strength",
+  "loudness"
+ ],
+ "typeShelf": {
+  "wild": "jungle",
+  "farm": "farm",
+  "pet": "house"
+ },
+ "animals": [
+  {
+   "id": "lion",
+   "name": "Sheru",
+   "type": "wild",
+   "shelf": "jungle",
+   "food": "meal",
+   "home": "jungle",
+   "stats": {
+    "speed": 7,
+    "strength": 8
+   },
+   "action": "yawn",
+   "review": true,
+   "reviewNote": "Carnivore: food shown as a plain covered bowl (food.meal), never a drumstick, prey or blood. Lions live in grassland and forest (Gir); 'jungle' is the child's word. Owner and teacher to approve."
+  },
+  {
+   "id": "tiger",
+   "name": "Veeru",
+   "type": "wild",
+   "shelf": "jungle",
+   "food": "meal",
+   "home": "jungle",
+   "stats": {
+    "speed": 8,
+    "strength": 9
+   },
+   "action": "stretch",
+   "review": true,
+   "reviewNote": "Carnivore: plain covered bowl, no prey or hunting. Owner and teacher to approve."
+  },
+  {
+   "id": "elephant",
+   "name": "Gajju",
+   "type": "wild",
+   "shelf": "jungle",
+   "food": "sugarcane",
+   "home": "jungle",
+   "stats": {
+    "size": 10,
+    "strength": 10
+   },
+   "action": "spray",
+   "review": true,
+   "reviewNote": "Mostly grass, leaves, bark and fruit; sugarcane (a favourite) is the food shown on the card and in Forage Trail."
+  },
+  {
+   "id": "monkey",
+   "name": "Bunty",
+   "type": "wild",
+   "shelf": "jungle",
+   "food": "fruit",
+   "home": "jungle",
+   "stats": {
+    "speed": 6,
+    "size": 2
+   },
+   "action": "banana"
+  },
+  {
+   "id": "bear",
+   "name": "Balu",
+   "type": "wild",
+   "shelf": "jungle",
+   "food": "honey",
+   "home": "jungle",
+   "stats": {
+    "size": 6,
+    "strength": 8
+   },
+   "action": "rub",
+   "review": true,
+   "reviewNote": "The emoji is a brown bear; the Indian sloth bear eats termites, fruit and honey. Honey kept as the icon."
+  },
+  {
+   "id": "peacock",
+   "name": "Neelu",
+   "type": "wild",
+   "shelf": "jungle",
+   "food": "seeds",
+   "home": "jungle",
+   "stats": {
+    "size": 3,
+    "speed": 4
+   },
+   "action": "fan",
+   "review": true,
+   "reviewNote": "Peacocks also eat insects; seeds is a simplification."
+  },
+  {
+   "id": "cow",
+   "name": "Gauri",
+   "type": "farm",
+   "shelf": "farm",
+   "food": "grass",
+   "home": "farm",
+   "stats": {
+    "size": 6,
+    "strength": 4
+   },
+   "action": "swish",
+   "review": true,
+   "reviewNote": "Farm shelf only (agreed rule). Sacred to many families: keep respectful, no jokes at the cow's expense."
+  },
+  {
+   "id": "buffalo",
+   "name": "Kalu",
+   "type": "farm",
+   "shelf": "farm",
+   "food": "grass",
+   "home": "farm",
+   "stats": {
+    "size": 7,
+    "strength": 6
+   },
+   "action": "roll"
+  },
+  {
+   "id": "goat",
+   "name": "Chintu",
+   "type": "farm",
+   "shelf": "farm",
+   "food": "leaves",
+   "home": "farm",
+   "stats": {
+    "speed": 5,
+    "size": 3
+   },
+   "action": "hop"
+  },
+  {
+   "id": "hen",
+   "name": "Kuku",
+   "type": "farm",
+   "shelf": "farm",
+   "food": "seeds",
+   "home": "farm",
+   "stats": {
+    "speed": 3,
+    "size": 1
+   },
+   "action": "chick"
+  },
+  {
+   "id": "horse",
+   "name": "Chetak",
+   "type": "farm",
+   "shelf": "farm",
+   "food": "grass",
+   "home": "farm",
+   "stats": {
+    "speed": 9,
+    "size": 7
+   },
+   "action": "trot",
+   "review": true,
+   "reviewNote": "A horse as a farm animal is a simplification (also a working animal)."
+  },
+  {
+   "id": "dog",
+   "name": "Moti",
+   "type": "pet",
+   "shelf": "house",
+   "food": "bone",
+   "home": "house",
+   "stats": {
+    "speed": 7,
+    "size": 3
+   },
+   "action": "fetch",
+   "review": true,
+   "reviewNote": "Many Indian dogs are street dogs; later content question. Bone is the common picture."
+  },
+  {
+   "id": "cat",
+   "name": "Mini",
+   "type": "pet",
+   "shelf": "house",
+   "food": "milk",
+   "home": "house",
+   "stats": {
+    "speed": 7,
+    "size": 2
+   },
+   "action": "lick",
+   "review": true,
+   "reviewNote": "'Cats drink milk' is a common child belief that adults may flag."
+  },
+  {
+   "id": "rabbit",
+   "name": "Bittu",
+   "type": "pet",
+   "shelf": "house",
+   "food": "carrot",
+   "home": "house",
+   "stats": {
+    "speed": 6,
+    "size": 1
+   },
+   "action": "nibble",
+   "review": true,
+   "reviewNote": "Renamed from Chiku (the sparrow character); owner to approve the name."
+  }
+ ]
+}

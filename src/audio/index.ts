@@ -365,6 +365,11 @@ export const audio = {
     } catch { /* never throw */ }
   },
 
+  /** Play a recipe a game made itself (no caption). Respects mute. */
+  play(r: Recipe): void {
+    try { if (muted || !ensureCtx()) return; playRecipe(r, sfxBus); } catch { /* never throw */ }
+  },
+
   animal(id: string): void {
     try {
       const r = (ANIMAL_RECIPES as Record<string, Recipe>)[id];

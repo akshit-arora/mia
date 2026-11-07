@@ -146,9 +146,131 @@ Everything slows down. Warm, quiet and sleepy. Start of the first line is still 
 | `day.end` | Time to rest now. | Soft, sleepy, like a bedtime | 2, about 20% slower | Lower your pitch a little |
 | `day.tomorrow` | See you tomorrow! | A whisper-smile | 2, slow | End on a soft, rising note |
 
+## 4b. NEW: lines for the card game (Stage 1, not yet recorded)
+
+These lines belong to the card game (home screen, reveal, shelves). Record them in the same sessions as the lines above, same voice, same distance. All are short: 2 to 6 words. Every line also appears as a caption. The card names (Sheru, Veeru and so on) and the facts in the food and home lines are **drafts: the owner and a teacher must approve them before recording.**
+
+### Scene K: Card name lines (NEW)
+
+Said when an animal walks out to be met, and when the speaker button on a card is tapped. Proud and delighted, like introducing a friend. Name first, then the animal word.
+
+| Key | Say exactly | Mood and tone | Energy / pace | Notes |
+|---|---|---|---|---|
+| `card.say.lion` | Sheru the lion! | Proud, delighted introduction | 4, bouncy | Stress the personal name; rising then falling |
+| `card.say.tiger` | Veeru the tiger! | Proud, delighted introduction | 4, bouncy | Stress the personal name; rising then falling |
+| `card.say.elephant` | Gajju the elephant! | Proud, delighted introduction | 4, bouncy | Stress the personal name; rising then falling |
+| `card.say.monkey` | Bunty the monkey! | Proud, delighted introduction | 4, bouncy | Stress the personal name; rising then falling |
+| `card.say.bear` | Balu the bear! | Proud, delighted introduction | 4, bouncy | Stress the personal name; rising then falling |
+| `card.say.peacock` | Neelu the peacock! | Proud, delighted introduction | 4, bouncy | Stress the personal name; rising then falling |
+| `card.say.cow` | Gauri the cow! | Proud, delighted introduction | 4, bouncy | Stress the personal name; rising then falling |
+| `card.say.buffalo` | Kalu the buffalo! | Proud, delighted introduction | 4, bouncy | Stress the personal name; rising then falling |
+| `card.say.goat` | Chintu the goat! | Proud, delighted introduction | 4, bouncy | Stress the personal name; rising then falling |
+| `card.say.hen` | Kuku the hen! | Proud, delighted introduction | 4, bouncy | Stress the personal name; rising then falling |
+| `card.say.horse` | Chetak the horse! | Proud, delighted introduction | 4, bouncy | Stress the personal name; rising then falling |
+| `card.say.dog` | Moti the dog! | Proud, delighted introduction | 4, bouncy | Stress the personal name; rising then falling |
+| `card.say.cat` | Mini the cat! | Proud, delighted introduction | 4, bouncy | Stress the personal name; rising then falling |
+| `card.say.rabbit` | Bittu the rabbit! | Proud, delighted introduction | 4, bouncy | Stress the personal name; rising then falling |
+
+### Scene L: Food lines (NEW)
+
+Said during the "because" beat of the reveal and when the child taps the food picture on a card. Warm and matter-of-fact, a smile in the voice.
+
+| Key | Say exactly | Mood and tone | Energy / pace | Notes |
+|---|---|---|---|---|
+| `card.food.lion` | Lions eat meat! | Warm, cheerful | 3, medium | Lions and tigers: say it plainly, no drama |
+| `card.food.tiger` | Tigers eat meat! | Warm, cheerful | 3, medium | Lions and tigers: say it plainly, no drama |
+| `card.food.elephant` | Elephants love sugarcane! | Warm, cheerful | 3, medium | Lions and tigers: say it plainly, no drama |
+| `card.food.monkey` | Monkeys love fruit! | Warm, cheerful | 3, medium | Lions and tigers: say it plainly, no drama |
+| `card.food.bear` | Bears love honey! | Warm, cheerful | 3, medium | Lions and tigers: say it plainly, no drama |
+| `card.food.peacock` | Peacocks eat seeds! | Warm, cheerful | 3, medium | Lions and tigers: say it plainly, no drama |
+| `card.food.cow` | Cows eat grass! | Warm, cheerful | 3, medium | Lions and tigers: say it plainly, no drama |
+| `card.food.buffalo` | Buffaloes eat grass! | Warm, cheerful | 3, medium | Lions and tigers: say it plainly, no drama |
+| `card.food.goat` | Goats munch leaves! | Warm, cheerful | 3, medium | Lions and tigers: say it plainly, no drama |
+| `card.food.hen` | Hens eat seeds! | Warm, cheerful | 3, medium | Lions and tigers: say it plainly, no drama |
+| `card.food.horse` | Horses eat grass! | Warm, cheerful | 3, medium | Lions and tigers: say it plainly, no drama |
+| `card.food.dog` | Dogs love bones! | Warm, cheerful | 3, medium | Lions and tigers: say it plainly, no drama |
+| `card.food.cat` | Cats love milk! | Warm, cheerful | 3, medium | Lions and tigers: say it plainly, no drama |
+| `card.food.rabbit` | Rabbits love carrots! | Warm, cheerful | 3, medium | Lions and tigers: say it plainly, no drama |
+
+### Scene M: Home lines (NEW)
+
+Said when the child taps the home picture on a card.
+
+| Key | Say exactly | Mood and tone | Energy / pace | Notes |
+|---|---|---|---|---|
+| `card.home.lion` | Lions live in the jungle! | Cosy, content | 3, slightly slow | Smile on the place word |
+| `card.home.tiger` | Tigers live in the jungle! | Cosy, content | 3, slightly slow | Smile on the place word |
+| `card.home.elephant` | Elephants live in the jungle! | Cosy, content | 3, slightly slow | Smile on the place word |
+| `card.home.monkey` | Monkeys live in the jungle! | Cosy, content | 3, slightly slow | Smile on the place word |
+| `card.home.bear` | Bears live in the jungle! | Cosy, content | 3, slightly slow | Smile on the place word |
+| `card.home.peacock` | Peacocks live in the jungle! | Cosy, content | 3, slightly slow | Smile on the place word |
+| `card.home.cow` | Cows live on the farm! | Cosy, content | 3, slightly slow | Smile on the place word |
+| `card.home.buffalo` | Buffaloes live on the farm! | Cosy, content | 3, slightly slow | Smile on the place word |
+| `card.home.goat` | Goats live on the farm! | Cosy, content | 3, slightly slow | Smile on the place word |
+| `card.home.hen` | Hens live on the farm! | Cosy, content | 3, slightly slow | Smile on the place word |
+| `card.home.horse` | Horses live on the farm! | Cosy, content | 3, slightly slow | Smile on the place word |
+| `card.home.dog` | Dogs live in a house! | Cosy, content | 3, slightly slow | Smile on the place word |
+| `card.home.cat` | Cats live in a house! | Cosy, content | 3, slightly slow | Smile on the place word |
+| `card.home.rabbit` | Rabbits live in a house! | Cosy, content | 3, slightly slow | Smile on the place word |
+
+### Scene N: Shelf and door lines (NEW)
+
+| Key | Say exactly | Mood and tone | Energy / pace | Notes |
+|---|---|---|---|---|
+| `card.went.jungle` | Off to the Jungle! | Happy send-off | 4, bouncy | Wave goodbye with your voice |
+| `card.went.farm` | Off to the Farm! | Happy send-off | 4, bouncy | Same as the Jungle line |
+| `card.went.house` | Off to the House! | Happy send-off | 4, bouncy | Same as the Jungle line |
+| `card.star` | A new star! | Delighted | 5, quick | Like finding a coin |
+| `home.soon` | Not open yet! | Gentle and amused, never disappointed | 3, medium | A closed door that wobbles: "not yet, but soon!" |
+
+### Scene O: Forage Trail lines (NEW, Jungle game)
+
+Said during the Jungle game. Short, light and playful; the fork line is a gentle invitation, never a test.
+
+| Key | Say exactly | Mood and tone | Energy / pace | Notes |
+|---|---|---|---|---|
+| `forage.pick` | Pick a food! | Curious, inviting | 3, medium | Said when the three signs roll in |
+| `forage.look` | Look who came! | Excited whisper, then a smile | 4, bouncy | Said as the bush rustles, just before the reveal |
+| `forage.rock` | Take it to the rock! | Playful, calm | 3, medium | Lion and tiger only: a plain covered bowl, nothing scary |
+
+### Scene P: Morning Round (NEW, Farm game)
+
+Said during the Farm game. Gentle and playful; never a quiz and never hurried.
+
+| Key | Say exactly | Mood and tone | Energy / pace | Notes |
+|---|---|---|---|---|
+| `farm.pick` | Which way shall we go? | Curious, inviting | 3, medium | Said when the three food signposts roll in |
+| `farm.tap` | Tap the glowing thing! | Cheerful, encouraging | 3, medium | Said once, at the first chore of a first-time child |
+| `farm.look` | Here they come! | Excited whisper, then a smile | 4, bouncy | Said as the home door swings open, just before the reveal |
+
+### Scene Q: Play Yard (NEW, House game)
+
+Said during the House game. Soft and cosy; the child is never told they did something wrong, and nothing is hurried.
+
+| Key | Say exactly | Mood and tone | Energy / pace | Notes |
+|---|---|---|---|---|
+| `house.pick` | Who is hungry? | Curious, warm | 3, medium | Said when the three food pictures (bone, milk, carrot) appear |
+| `house.throw` | Tap to throw! | Cheerful, encouraging | 3, medium | Said once, only if the child has not thrown after a few quiet seconds |
+| `house.nap` | Time for a nap! | Sleepy, soft, a little yawn | 2, slow | Said as the pet has eaten and walks home to curl up |
+| `house.paint` | Pick a colour! | Bright, inviting | 3, medium | Said when the three paint colours appear for the pet's home and toy |
+
+### Scene R: Card clash (NEW, Trump mode)
+
+Said during Card clash, the card game from the home screen's picture button. Everyone wins something: a loss is a funny shrug, never a scolding. Warm, playful, fast.
+
+| Key | Say exactly | Mood and tone | Energy / pace | Notes |
+|---|---|---|---|---|
+| `trump.pick` | Pick a power! | Bright, inviting | 3, medium | Said once, in the very first round only, after the card's name |
+| `trump.win` | Hooray, you win! | Delighted, cheering | 4, bouncy | The winner's line. With two children it cheers the winner of the round |
+| `trump.lose` | Next time, friend! | Cheerful, amused, like a shrug and a smile | 3, medium | Never sad or disappointed. Only when the child plays the phone and the phone's card wins |
+| `trump.tie` | Same power! Sparkle! | Surprised, delighted | 4, bouncy | Both cards sparkle |
+| `trump.pass` | Pass the phone! | Playful, a little conspiratorial | 3, medium | Two children only: the phone goes to the other player |
+| `trump.done` | What a great clash! | Proud, warm | 4, bouncy | After the fifth round |
+| `trump.locked` | Get more friends first! | Friendly, encouraging, a little mysterious | 3, medium | When the child has fewer than 4 cards; the three doors are shown |
+
 ## 5. Quick checklist
 
-- [ ] 51 keys total: 4 + 2 + 14 + 5 + 3 + 2 + 6 + 6 + 6 + 3 = **51**.
+- [ ] 51 keys in sections 4 (scenes A to I): 4 + 2 + 14 + 5 + 3 + 2 + 6 + 6 + 6 + 3 = **51**. Section 4b (NEW, card game) adds 14 + 14 + 14 + 5 = **47**, Scene O (Forage Trail) adds **3**, Scene P (Morning Round) adds **3**, and Scene Q (Play Yard) adds **4**, and Scene R (Card clash) adds **7**, so **115** keys in all.
 - [ ] 3 takes each, half a second of silence at each end.
 - [ ] All 14 names recorded in the same sitting, same distance.
 - [ ] Praise lines (`correct.1` to `correct.3`) sound clearly different from each other.

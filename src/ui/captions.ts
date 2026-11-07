@@ -12,6 +12,9 @@ const ICONS: Record<string, string> = {
 let box: HTMLElement;
 let live: HTMLElement;
 let mode: CaptionMode = 'auto';
+/** A game may hide sfx captions that the picture already shows and the speaker icon (reset when it exits). */
+const style = { hideSfx: false, noIcon: false };
+export function setCaptionStyle(o: { hideSfx?: boolean; noIcon?: boolean }): void { style.hideSfx = !!o.hideSfx; style.noIcon = !!o.noIcon; }
 let resolveText: (k: string) => string = t;
 
 function visible(): boolean {
@@ -35,6 +38,7 @@ export function refresh(): void {
 }
 
 function showEvent(e: CaptionEvent): void {
+  if (style.hideSfx && e.kind === 'sound' && e.key.startsWith('cc.sfx.')) return;
   const speaker = e.kind === 'speech' ? e.speaker : undefined;
   push(resolveText(e.key), e.kind === 'speech' ? e.speaker || 'bholu' : 'sound', Math.max(e.ms, 2000), e.kind === 'speech', speaker);
 }
@@ -53,7 +57,7 @@ function push(text: string, icon: string, ms: number, speech: boolean, speaker?:
   row.className = 'cc-row' + (speech ? '' : ' cc-sound');
   if (speech) row.setAttribute('data-speech', '1');
   const label = speaker ? t(`cc.speaker.${speaker}`) : '';
-  row.innerHTML = `<span class="cc-icon" title="${label}">${ICONS[icon] || ICONS.sound}</span>`;
+  if (!(style.noIcon && speech)) row.innerHTML = `<span class="cc-icon" title="${label}">${ICONS[icon] || ICONS.sound}</span>`;
   const span = document.createElement('span');
   span.textContent = text;
   row.appendChild(span);

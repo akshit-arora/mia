@@ -19,7 +19,9 @@ export function closeParent(): void {
   (c ?? opener)?.focus();
 }
 
-export function openParent(hooks: ParentHooks, from: HTMLElement): void {
+export interface ParentLink { href: string; labelKey: string }
+
+export function openParent(hooks: ParentHooks, from: HTMLElement, links: ParentLink[] = []): void {
   if (dlg) return;
   opener = from;
   const p = hooks.progress();
@@ -38,6 +40,7 @@ export function openParent(hooks: ParentHooks, from: HTMLElement): void {
     dlg!.innerHTML = `<div class="panel">
       <h2 id="parent-h">${t('parent.title')}</h2>
       <p>${t('parent.intro')}</p>
+      ${links.length ? `<fieldset><legend>${t('ui.mia')}</legend>${links.map((l) => `<a class="parent-link" href="${l.href}">${t(l.labelKey)}</a>`).join('')}</fieldset>` : ''}
       ${seg(t('parent.captions'), 'captions', [['off', t('parent.captions.off')], ['on', t('parent.captions.on')], ['auto', t('parent.captions.auto')]], s.captions, () => {}, t('parent.captions.auto.help'))}
       ${seg(t('parent.size'), 'captionSize', [['small', t('parent.size.small')], ['medium', t('parent.size.medium')], ['large', t('parent.size.large')]], s.captionSize, () => {})}
       <fieldset><legend>${t('parent.sound')}</legend><div class="seg">
@@ -82,7 +85,7 @@ export function openParent(hooks: ParentHooks, from: HTMLElement): void {
   dlg.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') { closeParent(); return; }
     if (e.key === 'Tab') { // simple focus trap
-      const f = dlg!.querySelectorAll<HTMLElement>('button, input, summary');
+      const f = dlg!.querySelectorAll<HTMLElement>('button, input, summary, a');
       const first = f[0], last = f[f.length - 1];
       if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
       else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }

@@ -1,3 +1,102 @@
+# Stage 3 addendum (2026-11-07): Card clash, polish, docs
+
+**Card clash (Trump mode)**: `src/games/trump/` (`index.ts` screen and frame loop, `logic.ts` pure rules, `art.ts` pre-rendered art, `sounds.ts` synth recipes), registered as game `trump` with no shelf (`GameDef.shelf` is now optional; `gameById()` added to the registry); a picture button (two crossed cards) on the home screen between the truck and the corner buttons. The three doors are unchanged. Tests: `tests/trump.test.ts` (11).
+- Menu: two pictures, a phone with a card (play with the phone) and two children (pass the phone). Fewer than 4 owned cards: a padlock over the owned cards and "?" slots, the three doors below (wordless "go and get more friends"; tap them to go home).
+- Round: hand of 5 per side drawn only from owned cards (distinct when the collection allows; the two cards of a round are different animals from 6 cards up). Five rounds. The picker alternates. Powers: the stats both cards store (size, speed, strength) plus a shared "cuddly" fun score every card has (`CUDDLY` table, draft), so every number shown is visible on both cards (2 or 3 choices; the one thing not done is a number the other card does not display). The chosen row is outlined on both cards, two bars grow with ticks, the bigger one flashes gold. Tie: both sparkle. Winner: hop, star burst, its own funny reaction and animal sound. Other card: a little tilted shrug and a soft "bwomp". Nothing is lost: hands and owned cards are never modified (tested).
+- Phone side: it chooses which of its unplayed cards to show and, on its own turn, which power to pick, aiming at a coin flip (55 percent child wins) it never explains. Seeded win rates over 400 matches: a child picking at random 39 to 44 percent, a child always picking the best power 49 to 59 percent (4, 6, 9 and 14 cards). A child who always picks the worst power still wins about 26 to 31 percent (that case is bounded only above 20 percent). `?seed=N` fixes the draw.
+- Friend mode: a coloured "pass the phone" screen before each round (blue left, orange right); the picker sees their card, the other card is face down. Voice: card name when a card is shown, "Pick a power!" once in the first round, win/lose/tie/pass/done/locked lines (Scene R, 7 keys; the booth was regenerated: 115 keys, 18 scenes).
+- Real buttons: stat tiles, menu pictures, pass screen, end screen (keys 1 to 3 pick); Escape returns to the menu.
+
+**Polish**
+- Corner buttons (sound, captions, grown-ups): while a game is open (`body.ingame`) they are 40 px, 55 percent opaque and in the top right; on home, shelves and cards they stay bottom right. Forage Trail and Morning Round move their food badge (and the farm sun) left of the buttons by measuring them. Checked on 812x375 and 900x405 for all three games and Card clash; the house game has nothing in that corner.
+- Morning Round: the stable's hay bale was at the canvas edge (clipped at every width) and is now left of the stable; the coop fence is light wood. A pair of eyes peeks through a crack in the door on each chore tap (4 fills, never shows which animal; the animal still appears only at the end); the max stayed at 23 calls.
+- `src/games/demo.ts` is imported only when `import.meta.env.DEV`, so it is not in the production bundle (verified: no demo chunk, no reference in `main-*.js`).
+- `?fps` overlay (`src/ui/fps.ts`, a probe in `Stage`): all pages and games, fps, worst tick gap, draw ms (average, max) and canvas calls (latest, max); nothing runs without `?fps` apart from one regex and a null check per frame.
+- First run: with no cards a white glove bobs over the Jungle door; it never shows once a card is owned (all three doors were already open).
+- "Start again" in the Grown-ups corner already needs two taps (the button turns into a confirm button) before it clears cards and settings progress; left as is. The two-tap state does not time out; a child who taps the corner button twice in a row after opening the dialog would still erase everything, but the dialog itself needs a one-second hold or three quick taps to open.
+- Names: the English locale and the design docs now say Balu and Bittu everywhere; hi.json had the old Hindi names (Bholu, Chiku) and was changed to Balu and Bittu in Devanagari (unreviewed). Bholu the truck and Chiku the sparrow (captions) remain, as intended.
+- Offline: `dist/sw.js` was inspected, not run. It precaches 16 entries: `index.html`, `sort.html`, `main-*.js`, `sort-*.js`, the preload helper (js and css), the register and workbox-window scripts, both atlases, icons and manifest. `navigateFallback: index.html` with `navigateFallbackDenylist: [/sort\.html/]` so the classic game page is served from its own precache entry. `globPatterns` include `webm` and `json`, which covers the audio packs (`speech.webm`, `animals.webm`) when they exist. Not exercised in a browser (the Browser pane will not register service workers).
+
+**Measured** (dev server, Browser pane 812x375 and 900x405, timer-driven frames, `?fps`): canvas calls per frame, maximum: home 10, shelves 1, card view 16, Forage Trail 22, Morning Round 23, Play Yard 22, Card clash 22 (limit 25). Draw time: average 0.1 to 0.6 ms, max 2.5 ms (desktop only). Size: total first install 90.7 KB gzip (app code 74.9, art 5.7, icons and service worker 10.1) of the 400 KB budget; the main script is 45.6 KB gzip. `npm run ci` green (146 tests: 135 before plus 11 for Card clash).
+
+**Not verified**: a real phone or touch, sound by ear (every sound is synthesized or a caption), the service worker and offline in a browser, Safari and Firefox, screen readers, Card clash with two real children, whether children understand the pass-the-phone picture, the Hindi names.
+
+**Shortcuts and open decisions**
+- Card clash does not let the child choose which card of the hand to play (cards come in hand order; the phone chooses its own). The hand is shown only as the five round dots.
+- The "cuddly" score and the numbers are drafts for the owner (H21). A stat a card does not store is never compared (the logic still has a made-up fallback for tests and safety).
+- The pass screen tints half the screen; the picker's card back wobbles; no voice names the player.
+- The end screen shows the child's five cards and confetti for about five seconds and then returns to the menu by itself (tap anywhere to leave sooner).
+- `GameDef.shelf` is optional now: a game without a shelf does not open from a door.
+
+---
+
+# Stage 2b-FARM addendum (2026-11-07): Morning Round, the Farm door's game
+
+`src/games/farm/` (`index.ts` game and frame loop, `logic.ts` pure rules, `art.ts` pre-rendered art, `sounds.ts` synth recipes), registered as game `farm` on shelf `farm`; one import line in `src/main.ts`; tests in `tests/farm.test.ts` (14).
+- Tap only. Bholu pulls a hay trailer along the farm lane (tap the cart to honk) for a 16 s warm-up, then a fork of three picture signposts: grass, leaves, seeds (the only three foods the farm cards use; shared icon kit). Tap a sign: the cart rolls into that animal's home yard (hen coop, cow barn, buffalo thatch shed, goat rock pen, horse stable). Four chores, 10 taps: feed the card's food, two helpers (hen: eggs, water; cow: milk pail, water; buffalo: mud, water; goat: stepping rock, hay; horse: brush, hay), then tap the door. The animal walks out to the cart, then `api.reveal`. About 60 to 90 s with the reveal. A missed tap only pulses the glow. No timers, lives, scores, random rewards.
+- Grass leads to cow, buffalo or horse (an unowned one first, taking turns); leaves to goat; seeds to hen. The fork always shows all three foods in a changing order, so every animal is always reachable. The cow is farm only.
+- Real `<button>` hotspots (46 logical px, at least 56 CSS px) over the picture: Tab, Enter, Space, keys 1 to 3 at the fork. Reduced motion removes bobbing, particles and shakes.
+- New locale keys: `farm.pick`, `farm.tap`, `farm.look` (voice lines, Scene P in the recording script), `farm.door` (caption for the door creak), `farm.aria`.
+- Measured (production build, Browser pane, 812x375, timer-driven frames): draw time average 0.11 ms, max 1.6 ms; at most 23 canvas calls per frame (every drawImage and fill counted by patching the context; limit 25). Total first install 83.1 KB gzip with the house game present.
+- Not verified: a real phone or touch, sound by ear, swipe (not used), Safari and Firefox, high contrast and reduced motion by eye, the service worker.
+- Shortcuts: the animal is hidden behind a closed door until the end (the reactions per tap are on the props and the door, not the animal); chore buttons share one aria label ("Tap the glowing thing!"); the fork imports `signBoard`, `foodBadge`, `shelfStrip`, `butterflies` from `src/games/forage/art.ts`; the horse has no treat (its card food is grass); hi.json has no farm keys (falls back to English).
+
+# Stage 2b-HOUSE addendum (2026-11-07): Play Yard, the House door's game
+
+`src/games/house/` (`index.ts` game and frame loop, `logic.ts` pure rules and timeline, `art.ts` pre-rendered art, `sounds.ts` synth recipes, `store.ts` the `mia.house.v1` save), registered as game `house` on shelf `house`. Tests: `tests/house.test.ts`.
+- Round: the pantry (a shelf with three food pictures: bone, milk, carrot; no text) -> the chosen food flies into the bowl and its pet runs from its own home (dog from the kennel, cat from the basket, rabbit from the hutch) -> tap anywhere (or Space/Enter/arrows) to throw the pet's own toy (ball, yarn, leaf ball), 4 to 6 throws, each fills one heart and nothing can fail; funny mishaps per pet (dog fetches, skids past, digs; cat pounces, gets tangled in the yarn, bats it away; rabbit hops, wanders sideways, nibbles the toy) -> the pet eats the food from the bowl in three munches, walks home and curls up -> the child paints the home and the toy in one of three colours (red, blue dots, yellow stripes; saved per pet in `mia.house.v1`) -> `api.reveal(pet)` (repeat = shared star level-up). The food and the home are the play, not decoration (the Reality Check's chocolate-covered-broccoli objection).
+- Pantry: all three pets are always on offer (each food brings a different pet, no wrong choice). The suggested pet (unowned first, least played, not the one just played) sits in the middle with the bobbing/hand hint, and on every third pantry on the left or right, so a child who always taps one slot still meets every pet.
+- Touch note kept from Stage 2a: pointers are read from the overlay `container`. Pantry and paint choices are real HTML buttons (keyboard, screen readers, 56 px minimum); a 450 ms guard ignores a double tap that opened the door.
+- Shared edits: one import line in `src/main.ts`, 8 locale keys (`house.*`, 4 spoken + 3 decoration names + aria), Scene Q in the recording script (4 spoken lines). The booth was NOT regenerated.
+
+# Stage 2a addendum (2026-11-07): Forage Trail, the Jungle door's game
+
+`src/games/forage/` (`index.ts` game and frame loop, `logic.ts` pure rules, `art.ts` pre-rendered art, `sounds.ts` synth recipes), registered as game `forage` on shelf `jungle`. The throwaway prototype (`src/proto`, `forage.html`, its vite input, denylist entry, the design note) is deleted and its own shelf key `mia.forage.shelf.v1` is gone: the HUD shelf is the real Jungle shelf from the shared card progress.
+- Round: 22 s warm-up run (sparkles, flowers), a fork of three signposts (one food each, never a duplicate, at least one leads to an animal not yet owned, least-shown foods rotate so every animal is reachable within a few rounds), about 8 pickups of the chosen food, a short "something is coming" beat (rustling bush), then `api.reveal(animal)`. Repeats give the shared level-up star. No timers, lives, scores or fail states; only 25 percent of items spawn in the basket's lane.
+- Foods: fruit (monkey), honey (bear), sugarcane (elephant), seeds (peacock), the plain covered meal bowl (lion or tiger, whichever is not owned, else alternating). Lion and tiger: the bowl is carried to a feeding rock; no meat, prey or hunting is shown. Scenery changes by food (banana trees, hives, cane field, seed bushes, savannah). Gags: a monkey swinging by, two butterflies.
+- Small shared edits: `audio.play(recipe)` (a game plays its own synthesized sounds), `setCaptionStyle` in `captions.ts` (this game hides sfx captions the picture already shows and the speaker icon on spoken captions; reset on exit), 4 locale keys (`forage.*`), Scene O in the recording script (3 spoken lines; booth regenerated, 101 keys, 15 scenes), elephant card food changed from leaves to sugarcane (data, line `card.food.elephant`) so the reveal and the game show the same food.
+- Overlay note for game authors: the game's `.game-root` overlay covers the canvas, so `stage.onDown` never fires; read pointer events from `container` (see `index.ts`).
+
+# Stage 1 addendum (2026-11-07): the card-game foundation
+
+Stage 1 of the "complete game": the shared foundation that the three Stage 2 games (Forage Trail, Morning Round, Play Yard) plug into. Verified on this Mac in the Browser pane only (812x375 viewport, scale 2); nothing was run on a phone or heard by ear.
+
+**What changed**
+- `index.html` + `src/main.ts` are now MIA (home screen, shelves, card view, reveal). The old sorting game is unchanged in behaviour at `sort.html` + `src/sort-main.ts`, linked from the Grown-ups corner as "Classic sorting game" (and the sorting game's corner gets a "Back to MIA" link). Manifest name is "MIA Toy Box" (short name "MIA"). Both pages are precached so each loads its own entry offline; `sort.html` is on `navigateFallbackDenylist`. (`forage.html`, the throwaway prototype, was deleted in Stage 2a.)
+- Data: `src/data/cards.json` (14 cards), `src/data/card-icons.json` (icon registry: id, group, emoji or canvas-drawn, shape, colour), locale keys (`card.*`, `food.*`, `home.*`, `type.*`, `stat.*`; Hindi stub has names, places, foods), baked card atlas `src/gen/card-atlas.{png,json}` (`npm run bake:cards`), canvas-drawn icons in `src/cards/icons.ts`.
+- Code: `src/cards/` (data, progress, kit, scenes, icons, reveal), `src/app/` (shell, registry, home, shelves + card view), `src/games/demo.ts` (debug only).
+- Storage: new key `mia.cards.v1` (`{v:1, cards:{id:level}}`), in-memory fallback, newer-version data is never overwritten. Settings still use the old progress key, so the Grown-ups corner works as before. "Start again" in the corner now also empties the shelves.
+- Recording script: new section 4b (scenes K to N, 47 new keys). The booth was regenerated; `tests/audio-booth.test.ts` expectations went from 51 to 98 keys and 10 to 14 scenes (the test compares the booth with the script, so the count must change when keys are added).
+
+**Plug-in interface for Stage 2** (`src/app/registry.ts`): `registerGame({ id, shelf, start(container, api) })`, import the game file in `src/main.ts`. `api` gives `stage`, `kit` (pre-rendered animals, icons, scenes), `audio`, `caption()`, `reveal(animalId)` (earns the card and plays the reveal; do not also call `earn()`), `earn()`, `owned()`, `levelOf()`, `exitButton()`, `exit()`, `onExit()`, `isRevealing()`. A registered game turns its home door from "wobbling closed door" into an open door. Try it with `?demo` (three stand-in games: tap the picture, get the next animal of that shelf).
+
+**Debug URL flags**: `?unlock=all` (fills shelves, writes nothing), `?debug` (exposes `window.__mia`, counts draw time), `?timerraf` (timer-driven frames for hidden browser panes), `?demo`, `?screen=shelves`, `?card=lion`, `?reveal=tiger`.
+
+**Measured (Browser pane, desktop Chrome, production code under Vite dev server)**
+- Reveal, first earn: 7.6 to 8.1 s before the final timing trim; after it the two longest actions (hen 1.8 s, peacock 1.7 s) measured 7.74 s and 7.65 s; repeat earn 2.65 s; reduced motion 5.15 s first, 2.26 s repeat. Frame rate about 29 fps (30 fps cap).
+- Canvas calls per frame (every fill, stroke, drawImage counted by patching the context): home 9, shelves 1, card view 16 (peacock fan), reveal peak 17 (peacock) and 13 for the others; limit is 25.
+- Draw time: average 0.1 to 0.2 ms, one-off 7.7 ms hitch seen once in the first peacock reveal (before pre-warming art; after it the max over 10 reveals was 0.7 to 1.5 ms). These are desktop numbers and say little about an old Android phone.
+- Size (`npm run size`): total first install 67.4 KB gzip (was 47.8), app code 50.0 KB of 150, art 7.2 KB of 40, total budget 400 unchanged. Nothing raised.
+
+**Not verified**: a real phone (touch targets are at least 56 CSS px at the tested scale; at scale 1 the CSS min size enlarges them), sound by ear (every line is caption plus synthetic or live speech until recorded), the service worker and offline loading (the Browser pane refuses to register service workers, so only the generated `dist/sw.js` precache list was inspected: it lists `index.html`, `sort.html` and all assets), Safari, Firefox, screen readers, high-contrast mode by eye, the Hindi stub by a speaker.
+
+**Shortcuts taken**
+- Reactions (`src/game/reactions.ts`) allocate one small object per frame during the 1.3 to 1.8 s funny action; everything else in the frame loops is allocation-free.
+- Drawn icons are my own simple flat art (grass, sugarcane, seeds, meal bowl, milk, barn, three type badges); they have not been looked at by a designer or a child.
+- Homes are only Jungle, Farm, House (no kennel or coop): the home fact is therefore nearly the same as the shelf. Adding a 4th and 5th home needs two icons and `cards.json` edits only.
+- The demo games and `?` flags ship in the production bundle (0.4 KB).
+- The parent-corner backup code covers only the old progress (settings and sorting game), not the cards.
+- (Stage 1 left the prototype Forage Trail separate; Stage 2a folded it in, see the next section.)
+
+**Open decisions for the owner**
+1. The 14 names (Sheru, Veeru, Gajju, Bunty, Bholu, Neelu, Gauri, Kalu, Chintu, Kuku, Chetak, Moti, Mini, Chiku). Clash: the bear is "Bholu" like the truck, the rabbit is "Chiku" like the sparrow. Both are flagged `review` in `cards.json`.
+2. The two stats per animal (all draft, deliberately exaggerated) and the stat kinds (loudness is allowed but unused).
+3. Carnivores: lion and tiger show a plain covered bowl (`food.meal`) and the voice line says "Lions eat meat!". The validator enforces that this icon stays canvas-drawn (never an emoji) and the animals stay flagged `review`.
+4. "Cats love milk" and "Dogs love bones" are common beliefs that adults may flag (teacher review).
+5. Whether the reveal's 7 to 8 seconds is too long for a child who has seen it many times (repeat earns are 2.6 s; the long-press skip exists).
+
+---
+
 # Build report: Milestone 0 and Milestone 1 (first playable)
 
 Date: 2026-11-05. Everything below was run on this Mac (Node 20.20, Chrome-based Browser pane at a 900x500 viewport). Nothing was tested on a real phone, with real children, or with recorded voices.

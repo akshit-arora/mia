@@ -12,6 +12,7 @@
     "validate": "node tools/validate-pack.mjs",
     "size": "node tools/check-size.mjs",
     "bake": "node tools/bake-emoji.mjs",
+    "bake:cards": "node tools/bake-emoji.mjs --entities src/data/card-icons.json --out src/gen/card-atlas.png --cols 4 --colors 32",
     "audio:pack": "node tools/audio-pack.mjs",
     "check:sources": "node tools/check-sources.mjs",
     "ci": "npm run validate && npm run check:sources && npm test && npm run build && npm run size"

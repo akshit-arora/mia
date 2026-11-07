@@ -9,7 +9,7 @@ export default defineConfig({
     assetsInlineLimit: 0,
     sourcemap: false,
     rollupOptions: {
-      input: { main: 'index.html' },
+      input: { main: 'index.html', sort: 'sort.html' }, // sort = the classic sorting game
     },
   },
   plugins: [
@@ -17,9 +17,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       injectRegister: false,
       manifest: {
-        name: 'MIA: Animal Express',
+        name: 'MIA Toy Box',
         short_name: 'MIA',
-        description: 'Tiny animal games for children. Works offline. Nothing leaves your device.',
+        description: 'Little games and collectible friend cards for children. Works offline. Nothing leaves your device.',
         start_url: './',
         scope: './',
         display: 'fullscreen',
@@ -33,7 +33,9 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,png,json,webm,svg,webmanifest}'],
+        // every page is precached, so each loads its own entry offline: index.html (MIA), sort.html (classic sorting game)
         navigateFallback: 'index.html',
+        navigateFallbackDenylist: [/sort\.html/], // otherwise the installed app would serve the main page instead of these
         cleanupOutdatedCaches: true,
         skipWaiting: true,
         clientsClaim: true,

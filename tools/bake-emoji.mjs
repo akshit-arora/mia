@@ -1,6 +1,8 @@
 // Bakes Twemoji SVGs (CC-BY 4.0 art) into one shared-palette pixel-art atlas.
 // Usage: node tools/bake-emoji.mjs [--size 32] [--out src/gen/atlas.png] [--only a,b,c]
 //        [--colors 32] [--outline 1] [--contrast 1] [--sat 1] [--sharpen 0] [--icons]
+//        [--entities path/to/[{id,emoji}].json]  (prototype / card atlases; default src/data/entities.json)
+//        Card atlas: node tools/bake-emoji.mjs --entities src/data/card-icons.json --out src/gen/card-atlas.png --cols 4 --colors 32
 // Deterministic: no randomness, stable sort everywhere.
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { dirname, resolve, join } from 'node:path';
@@ -25,8 +27,8 @@ const ONLY = opt('only', '') ? opt('only').split(',') : null;
 const COLS = +opt('cols', 4);
 const ALPHA_T = 128;
 
-const entities = JSON.parse(readFileSync(join(root, 'src/data/entities.json'), 'utf8'))
-  .filter((e) => !ONLY || ONLY.includes(e.id));
+const entities = JSON.parse(readFileSync(resolve(root, opt('entities', 'src/data/entities.json')), 'utf8'))
+  .filter((e) => e.emoji && (!ONLY || ONLY.includes(e.id))); // entries without an emoji (canvas-drawn icons) are skipped
 const svgDir = join(root, 'node_modules/@twemoji/svg');
 const missing = entities.filter((e) => !existsSync(join(svgDir, e.emoji + '.svg')));
 if (missing.length) { console.error('MISSING codepoints:', missing.map((e) => `${e.id}:${e.emoji}`).join(' ')); process.exit(1); }

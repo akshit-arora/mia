@@ -162,3 +162,100 @@ export function validatePack(pack, locales, opts = {}) {
   }
   return { errors, warnings };
 }
+
+// ---------------------------------------------------------------------------
+// Card data (src/data/cards.json + card-icons.json). Pure, like validatePack.
+//   cards   = parsed cards.json   ({ shelves, types, statKinds, typeShelf, animals })
+//   icons   = parsed card-icons.json (array)
+//   entities= parsed entities.json (array)
+//   locales = { en, hi? }
+//   opts    = { actions?: string[] (reaction names), drawn?: string[] (ids drawn on canvas),
+//               atlas?: string[] (ids baked in the card atlas) }
+// ---------------------------------------------------------------------------
+const words = (s) => String(s).trim().split(/\s+/).filter(Boolean).length;
+
+export function validateCards(cards, icons, entities, locales, opts = {}) {
+  const errors = [];
+  const err = (m) => errors.push(m);
+  const FC = 'src/data/cards.json', FI = 'src/data/card-icons.json';
+  const en = (locales && locales.en) || {};
+  const hasKey = (k) => Object.prototype.hasOwnProperty.call(en, k) && typeof en[k] === 'string' && en[k] !== '';
+  const needKey = (who, k) => { if (!hasKey(k)) err(`src/locales/en.json: missing key "${k}" (needed by ${who})`); };
+  const range = (who, k, lo, hi) => { if (hasKey(k)) { const n = words(en[k]); if (n < lo || n > hi) err(`src/locales/en.json: "${k}" has ${n} words, expected ${lo} to ${hi} (${who})`); } };
+
+  // icons
+  const iconById = new Map();
+  if (!Array.isArray(icons)) { err(`${FI}: must be an array`); icons = []; }
+  const seen = { food: { shape: new Map(), colour: new Map() }, home: { shape: new Map(), colour: new Map() }, type: { shape: new Map(), colour: new Map() }, ui: { shape: new Map(), colour: new Map() } };
+  for (const ic of icons) {
+    if (!ic || !ic.id) { err(`${FI}: an icon has no id`); continue; }
+    if (iconById.has(ic.id)) err(`${FI}: duplicate icon "${ic.id}"`);
+    iconById.set(ic.id, ic);
+    if (!seen[ic.group]) { err(`${FI}: icon "${ic.id}" has unknown group "${ic.group}"`); continue; }
+    if (!ic.id.startsWith(ic.group + '.')) err(`${FI}: icon "${ic.id}" must start with "${ic.group}."`);
+    if (!!ic.emoji === !!ic.draw) err(`${FI}: icon "${ic.id}" needs exactly one of "emoji" (baked) or "draw": true (canvas)`);
+    if (ic.emoji && !/^[0-9a-f]{4,6}(-[0-9a-f]{4,6})*$/.test(ic.emoji)) err(`${FI}: icon "${ic.id}" emoji must be lowercase hex`);
+    if (!ic.shape || !ic.colour) err(`${FI}: icon "${ic.id}" needs "shape" and "colour" (every icon must differ in shape AND colour)`);
+    for (const f of ['shape', 'colour']) {
+      const m = seen[ic.group][f];
+      if (ic[f] && m.has(ic[f])) err(`${FI}: icons "${m.get(ic[f])}" and "${ic.id}" share the ${f} "${ic[f]}" (colour-blind safety: same group must differ in shape and colour)`);
+      else if (ic[f]) m.set(ic[f], ic.id);
+    }
+    if (ic.draw && opts.drawn && !opts.drawn.includes(ic.id)) err(`${FI}: icon "${ic.id}" is canvas-drawn but src/cards/icons.ts has no drawing for it`);
+    if (ic.emoji && opts.atlas && !opts.atlas.includes(ic.id)) err(`${FI}: icon "${ic.id}" is missing from src/gen/card-atlas.json (run: npm run bake:cards)`);
+  }
+
+  const shelves = Array.isArray(cards && cards.shelves) ? cards.shelves : (err(`${FC}: shelves must be an array`), []);
+  const types = Array.isArray(cards && cards.types) ? cards.types : (err(`${FC}: types must be an array`), []);
+  const kinds = Array.isArray(cards && cards.statKinds) ? cards.statKinds : [];
+  const typeShelf = (cards && cards.typeShelf) || {};
+  const animals = Array.isArray(cards && cards.animals) ? cards.animals : (err(`${FC}: animals must be an array`), []);
+  const entIds = new Set((entities || []).map((e) => e.id));
+
+  for (const s of shelves) { needKey(`shelf ${s}`, 'home.' + s); needKey(`shelf ${s}`, 'ui.shelf.' + s); needKey(`shelf ${s}`, 'card.went.' + s); range(`shelf ${s}`, 'card.went.' + s, 2, 4); }
+  for (const t of types) { needKey(`type ${t}`, 'type.' + t); if (!shelves.includes(typeShelf[t])) err(`${FC}: typeShelf["${t}"] must name a shelf`); if (!iconById.has('type.' + t)) err(`${FC}: type "${t}" has no icon "type.${t}"`); }
+  for (const s of shelves) if (!iconById.has('home.' + s) ) err(`${FC}: shelf "${s}" has no icon "home.${s}"`);
+
+  const ids = new Set();
+  const usedKinds = new Set();
+  for (const [i, a] of animals.entries()) {
+    const id = a && a.id;
+    const who = `${FC}: animal #${i} (${id ?? '?'})`;
+    if (!id) { err(`${who} has no id`); continue; }
+    if (ids.has(id)) err(`${who}: duplicate id`);
+    ids.add(id);
+    if (!entIds.has(id)) err(`${who}: no entity "${id}" in src/data/entities.json (no sprite or sound)`);
+    for (const f of ['name', 'type', 'shelf', 'food', 'home', 'stats', 'action']) if (a[f] === undefined || a[f] === '') err(`${who}: missing "${f}"`);
+    if (a.type && !types.includes(a.type)) err(`${who}: type "${a.type}" is not one of ${types.join('/')}`);
+    if (a.shelf && !shelves.includes(a.shelf)) err(`${who}: shelf "${a.shelf}" is not one of ${shelves.join('/')}`);
+    if (a.type && a.shelf && typeShelf[a.type] !== a.shelf) err(`${who}: type "${a.type}" belongs on shelf "${typeShelf[a.type]}", not "${a.shelf}"`);
+    if (a.food && !iconById.has('food.' + a.food)) err(`${who}: food icon "food.${a.food}" does not exist in ${FI}`);
+    if (a.home && !iconById.has('home.' + a.home)) err(`${who}: home icon "home.${a.home}" does not exist in ${FI}`);
+    if (a.action && opts.actions && !opts.actions.includes(a.action)) err(`${who}: action "${a.action}" is not in src/game/reactions.ts`);
+    const st = a.stats && typeof a.stats === 'object' ? Object.entries(a.stats) : [];
+    if (st.length !== 2) err(`${who}: needs exactly 2 stats, has ${st.length}`);
+    for (const [k, v] of st) {
+      if (!kinds.includes(k)) err(`${who}: stat "${k}" is not one of ${kinds.join('/')}`);
+      else { usedKinds.add(k); needKey(`stat ${k}`, 'stat.' + k); }
+      if (!Number.isInteger(v) || v < 1 || v > 10) err(`${who}: stat "${k}" must be a whole number 1 to 10`);
+    }
+    // carnivores: neutral meal icon only, and flagged for review
+    if (a.food === 'meal') {
+      if (!a.review) err(`${who}: food "meal" (carnivore) must carry review: true`);
+      const m = iconById.get('food.meal');
+      if (m && m.emoji) err(`${FI}: "food.meal" must be a plain canvas-drawn covered bowl, not an emoji (no drumstick, prey or blood)`);
+    }
+    if (a.review && !a.reviewNote) err(`${who}: review: true needs a reviewNote`);
+    for (const k of ['card.name.', 'card.say.', 'card.food.', 'card.home.']) needKey(`animal ${id}`, k + id);
+    if (a.food) needKey(`animal ${id}`, 'food.' + a.food);
+    if (a.home) needKey(`animal ${id}`, 'home.' + a.home);
+    if (a.type) needKey(`animal ${id}`, 'type.' + a.type);
+    range(`animal ${id}`, 'card.say.' + id, 2, 6);
+    range(`animal ${id}`, 'card.food.' + id, 3, 6);
+    range(`animal ${id}`, 'card.home.' + id, 3, 6);
+  }
+  for (const k of ['card.star', 'home.soon', 'card.locked', 'card.hear', 'ui.shelves', 'ui.back', 'ui.skip', 'ui.truck', 'stat.of']) needKey('card game UI', k);
+  range('spoken', 'card.star', 2, 4); range('spoken', 'home.soon', 2, 4);
+  void usedKinds;
+  return { errors };
+}

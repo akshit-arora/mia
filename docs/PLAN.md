@@ -1,5 +1,7 @@
 # Plan v3: tiny educational games PWA
 
+> **Direction changed on 2026-11-07, see D17.** The product is now MIA, a toy box of games that earn animal cards, not a sorting quiz. Sections marked *superseded by D17* below describe the first direction (Animal Express, Deliver) and are kept for history; the sorting game still runs at `sort.html`. For what exists now read README.md, docs/design/THREE_GAMES.md and docs/BUILD_REPORT.md.
+
 Status: planning only, no code yet. Last updated 2026-11-05.
 Working names (all changeable): game = **Animal Express**, town = **Chhotu-Nagar**, guides = **Bholu** (truck) and **Chiku** (sparrow).
 
@@ -45,8 +47,21 @@ An open-source, offline-first PWA of tiny, joyful games for children (first targ
 | D14 | The pets zone is called **Home**; the later "animal homes" game is renamed **Nest Lane** to avoid a clash | Proposed |
 | D15 | Wonder Bubbles (tap to reveal a fact) replace a per-zone "?" fact button | Proposed |
 | D16 | Project name **MIA** (first game: Animal Express); licence **MIT** | Owner (2026-11-05) |
+| D17 | **Direction change: from a sorting quiz to games that earn collectible cards.** MIA is a toy box of three door games (Jungle: Forage Trail, Farm: Morning Round, House: Play Yard) plus Card clash. Each game ends with an animal card the child earned by playing; cards sit on three shelves; Card clash uses them like Pokemon or wrestling Trump cards. The sorting game is kept as the classic game in the Grown-ups corner. D3 (Deliver as the first mechanic) and the level ladder in 4.5 are superseded; D1, D2, D4 to D11, D13 to D16 stand | Owner (2026-11-07) |
+
+### D17 in full: why the direction changed
+- **The first direction (Animal Express, Deliver).** Drag each animal to its place. It worked as software but felt like a workbook with a truck: the correct answer is always one place, the child is asked "where does it live" a hundred times, and a child can finish it without wanting anything. It is a quiz in a game skin.
+- **Rejected direction 1: "Try It" puzzles** (`docs/design/STORY_PUZZLES.md`). Replace Deliver with try-a-helper puzzles in three scenes. The Reality Checker's review (`docs/design/REALITY_CHECK.md`) found a risk of the same "game skin on a quiz" pattern, weak transfer for wild animals and pets, and a large animation and content cost for one person. Verdict: needs work; no-go on the full redesign.
+- **Rejected direction 2: the Bholu story layer** (`docs/design/STORY_CHARACTERS.md`, "Oh No, Bholu!", the town of Chhotu-Nagar, a seven-night arc, Moon Mela). A story with recurring characters around the puzzles. Rejected with direction 1 for the same review (scope, no evidence from any child, a rail that a child can finish and leave). Bholu the truck survives as a small helper in the Farm game and as the captions' narrator.
+- **The chosen direction** (`docs/design/THREE_GAMES.md`, reviewed in `REALITY_CHECK_THREE_GAMES.md`). The owner asked for games that are fun first and not educational on the surface: the animals are the reward, cards work like Pokemon or Trump cards, three shelves, no questions, no tests. The facts (name, type, food, home, three powers) ride on the card and are repeated every time the card is shown, and the food or the home is part of the game that earned it. It teaches recognition and association, not reasoning; that limit is accepted and written down.
+- **Why now:** the owner's own direction, and a cheaper build (three small games sharing one shell, one reveal and one card store, all data driven).
+- **What stays:** captions, no failure, offline, privacy, the micro-engine (D12), the voice plan (D10), the sound licence rule (D13).
+- **How it is judged:** by the observation protocol in `docs/PHONE_TEST.md`, with kill and revise criteria. No child has played MIA yet.
+
 
 ## 4. The experience
+
+*Superseded by D17: sections 4.1 to 4.7 describe the first direction, the Animal Express town and Deliver levels. The current experience is in README.md and docs/design/THREE_GAMES.md.*
 
 ### 4.1 Home screen: a one-screen town
 Each chapter is a **place with a verb**, never a subject label. The town grows visibly as the child plays (a lamp, a flag, flowers).
@@ -81,7 +96,7 @@ The intro compresses the single-target levels (1, 2 and 5) into the first minute
 - Silent adaptation: a hidden per-animal confidence (based on first-try drops, never speed) picks the next animals. Hesitation is treated as curiosity and triggers an invitation to poke the park, not a hint.
 - Hints fade: after 3 seconds a ghost hand, after 6 seconds the animal hops halfway. A tap-then-tap alternative to dragging is always available.
 
-### 4.5 Level ladder (15 levels; Milestone 1 builds the intro plus levels 3 to 8; levels 1, 2 and 5 are single-target replay pools)
+### 4.5 Level ladder *(superseded by D17: the sorting game is now the classic game)* (15 levels; Milestone 1 builds the intro plus levels 3 to 8; levels 1, 2 and 5 are single-target replay pools)
 
 | # | Targets | New idea |
 |---|---|---|

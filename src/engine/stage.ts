@@ -22,6 +22,8 @@ export class Stage {
   onCancel: () => void = () => {};
   onKey: (e: KeyboardEvent) => void = () => {};
   onResize: () => void = () => {};
+  /** Optional frame probe (the ?fps overlay). null = off, and then the frame loop pays one null check. */
+  probe: { begin(): void; end(now: number): void } | null = null;
   private dirty = true;
   private tws: Tw[] = [];
   private last = 0;
@@ -110,7 +112,10 @@ export class Stage {
       if (!this.dirty && now - this.lastIdle < 250) return; // idle animation at 4 fps
       this.dirty = false;
       this.lastIdle = now;
+      const p = this.probe;
+      if (p) p.begin();
       this.draw(this.ctx, now);
+      if (p) p.end(now);
     };
     requestAnimationFrame(frame);
   }

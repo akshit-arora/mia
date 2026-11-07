@@ -1,0 +1,24 @@
+[
+  { "id": "food.leaves",    "group": "food", "emoji": "1f343", "shape": "leaf",    "colour": "green" },
+  { "id": "food.fruit",     "group": "food", "emoji": "1f34c", "shape": "banana",  "colour": "yellow" },
+  { "id": "food.grass",     "group": "food", "draw": true,     "shape": "tuft",    "colour": "lime" },
+  { "id": "food.honey",     "group": "food", "emoji": "1f36f", "shape": "pot",     "colour": "amber" },
+  { "id": "food.sugarcane", "group": "food", "draw": true,     "shape": "stalk",   "colour": "purple" },
+  { "id": "food.seeds",     "group": "food", "draw": true,     "shape": "heap",    "colour": "brown" },
+  { "id": "food.meal",      "group": "food", "draw": true,     "shape": "dome",    "colour": "red" },
+  { "id": "food.bone",      "group": "food", "emoji": "1f9b4", "shape": "bone",    "colour": "white" },
+  { "id": "food.milk",      "group": "food", "draw": true,     "shape": "bowl",    "colour": "blue" },
+  { "id": "food.carrot",    "group": "food", "emoji": "1f955", "shape": "cone",    "colour": "orange" },
+
+  { "id": "home.jungle",    "group": "home", "emoji": "1f333", "shape": "tree",    "colour": "green" },
+  { "id": "home.farm",      "group": "home", "draw": true,     "shape": "barn",    "colour": "red" },
+  { "id": "home.house",     "group": "home", "emoji": "1f3e0", "shape": "house",   "colour": "blue" },
+
+  { "id": "type.wild",      "group": "type", "draw": true,     "shape": "diamond", "colour": "green" },
+  { "id": "type.farm",      "group": "type", "draw": true,     "shape": "square",  "colour": "yellow" },
+  { "id": "type.pet",       "group": "type", "draw": true,     "shape": "heart",   "colour": "pink" },
+
+  { "id": "ui.star",        "group": "ui",   "emoji": "2b50",  "shape": "star",    "colour": "yellow" },
+  { "id": "ui.sparkle",     "group": "ui",   "emoji": "2728",  "shape": "sparkle", "colour": "gold" },
+  { "id": "ui.hand",        "group": "ui",   "emoji": "1f447", "shape": "hand",    "colour": "skin" }
+]
