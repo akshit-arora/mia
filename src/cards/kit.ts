@@ -31,19 +31,28 @@ export function createKit(stage: Stage, atlas: Atlas, cardAtlas: Atlas): Kit {
   const thumbCache = new Map<string, Cv>();
   let sized = new Map<string, Cv>(); // depends on stage.W/H
 
-  const base32 = (id: string): Cv => {
-    const key = id + '@32';
+  // Every sprite is built from a 64 px source (the flat-vector bake) and downscaled with smoothing.
+  // Canvas-drawn icons still start on their 32 px grid and are supersampled up to 64, so both
+  // sources share one crisp, anti-aliased treatment.
+  const BASE = 64;
+  const base64 = (id: string): Cv => {
+    const key = id + '@base';
     let c = iconCache.get(key);
     if (c) return c;
-    const [cv, g] = mk(32, 32);
-    if (DRAWN[id]) DRAWN[id](g); else cardAtlas.draw(g, id, 16, 32);
+    const [cv, g] = mk(BASE, BASE);
+    if (DRAWN[id]) {
+      const [t, tg] = mk(32, 32);
+      DRAWN[id](tg);
+      g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+      g.drawImage(t, 0, 0, BASE, BASE);
+    } else cardAtlas.drawSized(g, id, BASE / 2, BASE, BASE);
     iconCache.set(key, cv);
     return cv;
   };
-  const scaled = (src: Cv, size: number, smooth: boolean): Cv => {
+  const scaled = (src: Cv, size: number): Cv => {
     if (size === src.width) return src;
     const [cv, g] = mk(size, size);
-    g.imageSmoothingEnabled = smooth && size % 32 !== 0; g.imageSmoothingQuality = 'high';
+    g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
     g.drawImage(src, 0, 0, size, size);
     return cv;
   };
@@ -52,15 +61,16 @@ export function createKit(stage: Stage, atlas: Atlas, cardAtlas: Atlas): Kit {
     icon(id, size = 32) {
       const key = id + '@' + size;
       let c = iconCache.get(key);
-      if (!c) { c = scaled(base32(id), size, true); iconCache.set(key, c); }
+      if (!c) { c = scaled(base64(id), size); iconCache.set(key, c); }
       return c;
     },
     animal(id, size = 32) {
       const key = id + '@' + size;
       let c = animalCache.get(key);
       if (!c) {
-        const [b, bg] = mk(32, 32); atlas.draw(bg, id, 16, 32);
-        c = scaled(b, size, true); animalCache.set(key, c);
+        const [b, bg] = mk(BASE, BASE);
+        atlas.drawSized(bg, id, BASE / 2, BASE, BASE);
+        c = scaled(b, size); animalCache.set(key, c);
       }
       return c;
     },
@@ -75,7 +85,7 @@ export function createKit(stage: Stage, atlas: Atlas, cardAtlas: Atlas): Kit {
       g.fillStyle = SHELF_TINT[card.shelf]; g.fillRect(3, 3, size - 6, size - 6);
       const a = Math.round(size * 0.66);
       g.imageSmoothingEnabled = true; g.drawImage(kit.animal(id, 32), Math.round((size - a) / 2), 3 + Math.round((size - 6 - a) / 2) - 1, a, a);
-      g.imageSmoothingEnabled = false;
+      g.imageSmoothingEnabled = true;
       const stars = Math.max(0, level - 1);
       for (let i = 0; i < stars; i++) { // star pips along the bottom edge
         const sx = Math.round(size / 2 - (stars * 5) / 2 + i * 5 + 1);

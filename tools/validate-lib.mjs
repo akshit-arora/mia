@@ -225,7 +225,7 @@ export function validateCards(cards, icons, entities, locales, opts = {}) {
     if (ids.has(id)) err(`${who}: duplicate id`);
     ids.add(id);
     if (!entIds.has(id)) err(`${who}: no entity "${id}" in src/data/entities.json (no sprite or sound)`);
-    for (const f of ['name', 'type', 'shelf', 'food', 'home', 'stats', 'action']) if (a[f] === undefined || a[f] === '') err(`${who}: missing "${f}"`);
+    for (const f of ['name', 'type', 'shelf', 'food', 'home', 'stats', 'action', 'ability']) if (a[f] === undefined || a[f] === '') err(`${who}: missing "${f}"`);
     if (a.type && !types.includes(a.type)) err(`${who}: type "${a.type}" is not one of ${types.join('/')}`);
     if (a.shelf && !shelves.includes(a.shelf)) err(`${who}: shelf "${a.shelf}" is not one of ${shelves.join('/')}`);
     if (a.type && a.shelf && typeShelf[a.type] !== a.shelf) err(`${who}: type "${a.type}" belongs on shelf "${typeShelf[a.type]}", not "${a.shelf}"`);
@@ -250,6 +250,7 @@ export function validateCards(cards, icons, entities, locales, opts = {}) {
     if (a.food) needKey(`animal ${id}`, 'food.' + a.food);
     if (a.home) needKey(`animal ${id}`, 'home.' + a.home);
     if (a.type) needKey(`animal ${id}`, 'type.' + a.type);
+    if (a.ability) { needKey(`animal ${id}`, 'ability.' + a.ability); range(`animal ${id}`, 'ability.' + a.ability, 2, 4); }
     range(`animal ${id}`, 'card.say.' + id, 2, 6);
     range(`animal ${id}`, 'card.food.' + id, 3, 6);
     range(`animal ${id}`, 'card.home.' + id, 3, 6);

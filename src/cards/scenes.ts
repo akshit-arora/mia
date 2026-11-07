@@ -11,7 +11,7 @@ export const SHELF_TINT: Record<ShelfId, string> = { jungle: '#d9f7c4', farm: '#
 
 export function mk(w: number, h: number): [Cv, G] {
   const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(w)); c.height = Math.max(1, Math.round(h));
-  const g = c.getContext('2d')!; g.imageSmoothingEnabled = false;
+  const g = c.getContext('2d')!; g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
   return [c, g];
 }
 export const disc = (g: G, x: number, y: number, r: number, col: string): void => { g.fillStyle = col; g.beginPath(); g.arc(x, y, r, 0, 6.2832); g.fill(); };

@@ -1,4 +1,5 @@
-// Baked sprite atlas (see tools/bake-emoji.mjs). Cells are 32x32; a 24 px copy is made once for the park.
+// Baked sprite atlas (see tools/bake-emoji.mjs). Cells are 64x64 (flat-vector bake); callers draw them
+// at any logical size. Downscaling is always smoothed, so the art stays crisp instead of pixelated.
 export interface AtlasJson { cell: number; cols: number; sprites: Record<string, { x: number; y: number }> }
 
 export class Atlas {
@@ -6,15 +7,19 @@ export class Atlas {
   private flat: Record<string, HTMLCanvasElement> = {};
   constructor(private img: HTMLImageElement, private json: AtlasJson) {}
   has(id: string): boolean { return !!this.json.sprites[id]; }
-  /** Draw at full 32 px; bottom-centre anchored. */
-  draw(ctx: CanvasRenderingContext2D, id: string, cx: number, by: number, flip = false): void {
+  /** Draw bottom-centre anchored at an explicit logical size. Smoothing is the caller's setting. */
+  drawSized(ctx: CanvasRenderingContext2D, id: string, cx: number, by: number, size: number, flip = false): void {
     const s = this.json.sprites[id]; if (!s) return;
     const c = this.json.cell;
     if (flip) {
       ctx.save(); ctx.translate(Math.round(cx), 0); ctx.scale(-1, 1);
-      ctx.drawImage(this.img, s.x, s.y, c, c, -c / 2, Math.round(by - c), c, c);
+      ctx.drawImage(this.img, s.x, s.y, c, c, -size / 2, Math.round(by - size), size, size);
       ctx.restore();
-    } else ctx.drawImage(this.img, s.x, s.y, c, c, Math.round(cx - c / 2), Math.round(by - c), c, c);
+    } else ctx.drawImage(this.img, s.x, s.y, c, c, Math.round(cx - size / 2), Math.round(by - size), size, size);
+  }
+  /** Legacy 32 px draw (the classic sorting game uses it); bottom-centre anchored. */
+  draw(ctx: CanvasRenderingContext2D, id: string, cx: number, by: number, flip = false): void {
+    this.drawSized(ctx, id, cx, by, 32, flip);
   }
   /** 24 px version, pre-scaled once with smoothing so the park looks tidy. */
   drawSmall(ctx: CanvasRenderingContext2D, id: string, cx: number, by: number, flip = false): void {
@@ -30,14 +35,15 @@ export class Atlas {
     else ctx.drawImage(cv, Math.round(cx - 12), Math.round(by - 24));
   }
   /** Flat dark silhouette (used for sleeping animals and silhouette reveals). */
-  silhouette(id: string): HTMLCanvasElement | null {
-    if (this.flat[id]) return this.flat[id];
+  silhouette(id: string, size = 64): HTMLCanvasElement | null {
+    const key = `${id}@${size}`;
+    if (this.flat[key]) return this.flat[key];
     const s = this.json.sprites[id]; if (!s) return null;
-    const cv = document.createElement('canvas'); cv.width = 32; cv.height = 32;
-    const g = cv.getContext('2d')!;
-    g.drawImage(this.img, s.x, s.y, 32, 32, 0, 0, 32, 32);
-    g.globalCompositeOperation = 'source-in'; g.fillStyle = '#1d2b53'; g.fillRect(0, 0, 32, 32);
-    return (this.flat[id] = cv);
+    const cv = document.createElement('canvas'); cv.width = size; cv.height = size;
+    const g = cv.getContext('2d')!; g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+    g.drawImage(this.img, s.x, s.y, this.json.cell, this.json.cell, 0, 0, size, size);
+    g.globalCompositeOperation = 'source-in'; g.fillStyle = '#1d2b53'; g.fillRect(0, 0, size, size);
+    return (this.flat[key] = cv);
   }
 }
 

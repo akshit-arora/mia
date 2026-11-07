@@ -1,5 +1,5 @@
 {
- "_comment": "Card data. Names, stats, foods and homes are drafts for owner and teacher review (all stats are deliberately exaggerated play numbers). Icons: src/data/card-icons.json. Locale keys: card.name.<id>, card.say.<id>, card.food.<id>, card.home.<id>, food.<food>, home.<home>, type.<type>.",
+ "_comment": "Card data. Names, stats, foods and homes are drafts for owner and teacher review (all stats are deliberately exaggerated play numbers). Icons: src/data/card-icons.json. Locale keys: card.name.<id>, card.say.<id>, card.food.<id>, card.home.<id>, food.<food>, home.<home>, type.<type>. Ability ids: ability.<ability> locale key; see src/cards/abilities.ts.",
  "version": 1,
  "shelves": [
   "jungle",
@@ -36,7 +36,8 @@
    },
    "action": "yawn",
    "review": true,
-   "reviewNote": "Carnivore: food shown as a plain covered bowl (food.meal), never a drumstick, prey or blood. Lions live in grassland and forest (Gir); 'jungle' is the child's word. Owner and teacher to approve."
+   "reviewNote": "Carnivore: food shown as a plain covered bowl (food.meal), never a drumstick, prey or blood. Lions live in grassland and forest (Gir); 'jungle' is the child's word. Owner and teacher to approve.",
+   "ability": "roar"
   },
   {
    "id": "tiger",
@@ -51,7 +52,8 @@
    },
    "action": "stretch",
    "review": true,
-   "reviewNote": "Carnivore: plain covered bowl, no prey or hunting. Owner and teacher to approve."
+   "reviewNote": "Carnivore: plain covered bowl, no prey or hunting. Owner and teacher to approve.",
+   "ability": "pounce"
   },
   {
    "id": "elephant",
@@ -66,7 +68,8 @@
    },
    "action": "spray",
    "review": true,
-   "reviewNote": "Mostly grass, leaves, bark and fruit; sugarcane (a favourite) is the food shown on the card and in Forage Trail."
+   "reviewNote": "Mostly grass, leaves, bark and fruit; sugarcane (a favourite) is the food shown on the card and in Forage Trail.",
+   "ability": "trunk"
   },
   {
    "id": "monkey",
@@ -79,7 +82,8 @@
     "speed": 6,
     "size": 2
    },
-   "action": "banana"
+   "action": "banana",
+   "ability": "climb"
   },
   {
    "id": "bear",
@@ -94,7 +98,8 @@
    },
    "action": "rub",
    "review": true,
-   "reviewNote": "The emoji is a brown bear; the Indian sloth bear eats termites, fruit and honey. Honey kept as the icon."
+   "reviewNote": "The emoji is a brown bear; the Indian sloth bear eats termites, fruit and honey. Honey kept as the icon.",
+   "ability": "sniff"
   },
   {
    "id": "peacock",
@@ -109,7 +114,8 @@
    },
    "action": "fan",
    "review": true,
-   "reviewNote": "Peacocks also eat insects; seeds is a simplification."
+   "reviewNote": "Peacocks also eat insects; seeds is a simplification.",
+   "ability": "fan"
   },
   {
    "id": "cow",
@@ -124,7 +130,8 @@
    },
    "action": "swish",
    "review": true,
-   "reviewNote": "Farm shelf only (agreed rule). Sacred to many families: keep respectful, no jokes at the cow's expense."
+   "reviewNote": "Farm shelf only (agreed rule). Sacred to many families: keep respectful, no jokes at the cow's expense.",
+   "ability": "gentle"
   },
   {
    "id": "buffalo",
@@ -137,7 +144,8 @@
     "size": 7,
     "strength": 6
    },
-   "action": "roll"
+   "action": "roll",
+   "ability": "wallow"
   },
   {
    "id": "goat",
@@ -150,7 +158,8 @@
     "speed": 5,
     "size": 3
    },
-   "action": "hop"
+   "action": "hop",
+   "ability": "balance"
   },
   {
    "id": "hen",
@@ -163,7 +172,8 @@
     "speed": 3,
     "size": 1
    },
-   "action": "chick"
+   "action": "chick",
+   "ability": "peck"
   },
   {
    "id": "horse",
@@ -178,7 +188,8 @@
    },
    "action": "trot",
    "review": true,
-   "reviewNote": "A horse as a farm animal is a simplification (also a working animal)."
+   "reviewNote": "A horse as a farm animal is a simplification (also a working animal).",
+   "ability": "gallop"
   },
   {
    "id": "dog",
@@ -193,7 +204,8 @@
    },
    "action": "fetch",
    "review": true,
-   "reviewNote": "Many Indian dogs are street dogs; later content question. Bone is the common picture."
+   "reviewNote": "Many Indian dogs are street dogs; later content question. Bone is the common picture.",
+   "ability": "fetch"
   },
   {
    "id": "cat",
@@ -208,7 +220,8 @@
    },
    "action": "lick",
    "review": true,
-   "reviewNote": "'Cats drink milk' is a common child belief that adults may flag."
+   "reviewNote": "'Cats drink milk' is a common child belief that adults may flag.",
+   "ability": "purr"
   },
   {
    "id": "rabbit",
@@ -223,7 +236,8 @@
    },
    "action": "nibble",
    "review": true,
-   "reviewNote": "Renamed from Chiku (the sparrow character); owner to approve the name."
+   "reviewNote": "Renamed from Chiku (the sparrow character); owner to approve the name.",
+   "ability": "burrow"
   }
  ]
 }

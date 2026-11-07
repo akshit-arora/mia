@@ -30,7 +30,7 @@ export interface GameApi {
   /** Record an animal as earned with no reveal (debug, silent grants). Returns the new level. */
   earn(animalId: string): EarnResult;
   /** Earn the card AND play the reveal. Resolves when the child has seen it (or long-pressed to skip). */
-  reveal(animalId: string): Promise<EarnResult>;
+  reveal(animalId: string, opts?: { quick?: boolean }): Promise<EarnResult>;
   owned(): string[];
   levelOf(animalId: string): number;
   /** true while the reveal covers the screen: ignore input in your own window listeners meanwhile */

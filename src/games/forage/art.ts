@@ -2,7 +2,7 @@
 // Food icons come from the shared kit (src/cards/icons.ts + card atlas) so a food looks identical on cards, reveal and here.
 import type { Kit } from '../../cards/kit';
 import { INK, disc, mk, type Cv } from '../../cards/scenes';
-import type { FoodId } from './logic';
+import type { FoodId, RouteId } from './logic';
 
 type G = CanvasRenderingContext2D;
 export type Biome = 'jungle' | FoodId;
@@ -98,9 +98,7 @@ export function farLayer(biome: Biome, T: number): Cv {
   const [c, g] = mk(T, FAR_H);
   const top = biome === 'meal' ? '#f3b961' : biome === 'seeds' ? '#5ab4e8' : '#2f7a3f';
   const bot = biome === 'meal' ? '#ffe3a0' : biome === 'seeds' ? '#cdeeff' : '#8fd18a';
-  const sky = g.createLinearGradient(0, 0, 0, FAR_H);
-  sky.addColorStop(0, top); sky.addColorStop(1, bot);
-  g.fillStyle = sky; g.fillRect(0, 0, T, FAR_H);
+  g.fillStyle = top; g.fillRect(0, 0, T, FAR_H / 2); g.fillStyle = bot; g.fillRect(0, FAR_H / 2, T, FAR_H / 2);
   const hill = biome === 'meal' ? '#d8a54a' : biome === 'seeds' ? '#9bd36b' : biome === 'sugarcane' ? '#6fbf6a' : '#5cae62';
   for (let i = 0; i < T / 26; i++) {
     const x = i * 26 + (i % 3) * 5;
@@ -204,5 +202,59 @@ export function foodBadge(icon: Cv): Cv {
   const [c, g] = mk(30, 30);
   disc(g, 15, 15, 14.5, INK); disc(g, 15, 15, 13, '#ffffff');
   g.imageSmoothingEnabled = true; g.drawImage(icon, 3, 3, 24, 24);
+  return c;
+}
+
+/** Route signboard with a flat pictogram (river waves, thicket bush, high hill). 36 x 30, bigger when the basket is lined up with it. */
+export function routeSign(route: RouteId, scale = 1): Cv {
+  const w = Math.round(36 * scale), h = Math.round(30 * scale);
+  const [c, g] = mk(w, h);
+  g.fillStyle = INK; g.fillRect(0, 0, w, h);
+  g.fillStyle = '#e8c27a'; g.fillRect(1, 1, w - 2, h - 2);
+  g.fillStyle = '#fff6dc'; g.fillRect(3, 3, w - 6, h - 6);
+  g.save(); g.translate(w / 2, h / 2); g.scale(scale, scale);
+  if (route === 'river') {
+    g.fillStyle = '#3aa0e8';
+    for (const y of [-7, -1, 5]) { g.fillRect(-11, y, 6, 3); g.fillRect(-5, y - 2, 6, 3); g.fillRect(1, y, 6, 3); g.fillRect(7, y - 2, 4, 3); }
+  } else if (route === 'thicket') {
+    disc(g, -6, 3, 6, '#2c8a3e'); disc(g, 6, 3, 6, '#34a047'); disc(g, 0, -3, 7, '#3dbb52');
+    g.fillStyle = '#ff7aa8'; g.fillRect(-2, -5, 3, 3); g.fillRect(5, 1, 3, 3);
+  } else {
+    g.fillStyle = '#8c869a'; g.beginPath(); g.moveTo(-12, 9); g.lineTo(-2, -9); g.lineTo(12, 9); g.fill();
+    g.fillStyle = '#ffffff'; g.beginPath(); g.moveTo(-2, -9); g.lineTo(-6, -2); g.lineTo(2, -2); g.fill();
+    g.fillStyle = '#ffd93d'; g.fillRect(6, -9, 4, 4);
+  }
+  g.restore();
+  return c;
+}
+
+/** hazards: [thorn, bee] each 18 x 18 flat shapes */
+export function hazardSprites(): Cv[] {
+  const [t, gt] = mk(18, 18);
+  gt.fillStyle = INK; gt.beginPath(); gt.moveTo(1, 17); gt.lineTo(5, 3); gt.lineTo(9, 13); gt.lineTo(13, 1); gt.lineTo(17, 17); gt.fill();
+  gt.fillStyle = '#7a4b9a'; gt.beginPath(); gt.moveTo(4, 15); gt.lineTo(6, 7); gt.lineTo(9, 14); gt.lineTo(12, 6); gt.lineTo(14, 15); gt.fill();
+  const [b, gb] = mk(18, 18);
+  disc(gb, 9, 10, 7.5, INK); disc(gb, 9, 10, 6, '#ffd93d');
+  gb.fillStyle = INK; gb.fillRect(5, 8, 8, 2); gb.fillRect(5, 12, 8, 2);
+  gb.fillStyle = '#d6f1ff'; gb.fillRect(3, 1, 5, 5); gb.fillRect(10, 1, 5, 5);
+  return [t, b];
+}
+
+/** the hidden token: a gold star badge */
+export function secretSprite(): Cv {
+  const [c, g] = mk(18, 18);
+  disc(g, 9, 9, 8.5, INK); disc(g, 9, 9, 7, '#ffd93d');
+  g.fillStyle = INK; g.beginPath(); g.moveTo(9, 3); g.lineTo(11, 8); g.lineTo(16, 8); g.lineTo(12, 11); g.lineTo(13.5, 16); g.lineTo(9, 13); g.lineTo(4.5, 16); g.lineTo(6, 11); g.lineTo(2, 8); g.lineTo(7, 8); g.fill();
+  g.fillStyle = '#ffffff'; g.fillRect(8, 7, 2, 2);
+  return c;
+}
+
+/** choice tile for the Ask board: cardboard square with a sprite centred on it */
+export function tile(sprite: Cv, size = 52, hot = false): Cv {
+  const [c, g] = mk(size, size);
+  g.fillStyle = INK; g.fillRect(0, 0, size, size);
+  g.fillStyle = hot ? '#ffd93d' : '#e8c27a'; g.fillRect(2, 2, size - 4, size - 4);
+  g.fillStyle = '#fff6dc'; g.fillRect(4, 4, size - 8, size - 8);
+  g.drawImage(sprite, Math.round((size - sprite.width) / 2), Math.round((size - sprite.height) / 2));
   return c;
 }

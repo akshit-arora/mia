@@ -41,7 +41,7 @@ export function installReveal(app: App): void {
     return b;
   };
 
-  const run = (id: string): Promise<EarnResult> => new Promise<EarnResult>((resolve) => {
+  const run = (id: string, quick = false): Promise<EarnResult> => new Promise<EarnResult>((resolve) => {
     const card: Card = cardOf(id);
     const res = getStore().earn(id);
     const first = res.first;
@@ -78,8 +78,15 @@ export function installReveal(app: App): void {
 
     // ---- plan (ms from first frame)
     const T = { name: 0, sound: 0, act: 0, food: 0, home: 0, shelf: 0, end: 0 };
-    const walk = reduced ? 0 : first ? 1000 : 300;
-    if (first) {
+    const walk = reduced ? 0 : first ? (quick ? 350 : 1000) : 300;
+    if (first && quick) {
+      // The 3-second reveal used by the Jungle loop: name, sound, a bite, the card. No action prop.
+      T.name = walk; T.sound = walk + 550;
+      T.act = T.sound; T.food = T.sound + 500;
+      T.home = T.food + (reduced ? 400 : 650);
+      T.shelf = T.home + 250;
+      T.end = T.shelf + (reduced ? 700 : 850);
+    } else if (first) {
       T.name = walk; T.sound = walk + 1000; // the name line is spoken first, then the animal's own sound
       T.act = reduced ? T.sound + 900 : walk + 1300;
       const actDur = reduced ? 0 : react.dur;
@@ -97,7 +104,7 @@ export function installReveal(app: App): void {
     at(T.name, () => { plate.hidden = false; void audio.say('card.say.' + id, 'bholu'); });
     at(T.sound, () => { audio.animal(id); audio.vibrate(15); });
     if (first) {
-      if (!reduced && react.sfx) at(T.act, () => audio.sfx(react.sfx!));
+      if (!quick && !reduced && react.sfx) at(T.act, () => audio.sfx(react.sfx!));
       at(T.food, () => { void audio.say('card.food.' + id, 'bholu'); });
       at(T.home, () => { audio.sfx('pop'); burst(stage.W * 0.45 + 34, stage.H * 0.72 - 44, 5); });
       at(T.shelf + 650, () => { void audio.say('card.went.' + card.shelf, 'bholu'); });
@@ -175,7 +182,7 @@ export function installReveal(app: App): void {
       if (wk < 1) { x = Math.round(W - 20 + (ax - (W - 20)) * ease(wk)); bob = Math.round(Math.abs(Math.sin(el / 110)) * 3); }
       let pop = 1;
       if (!first && !reduced) pop = 0.5 + 0.5 * ease(el / 250);
-      if (first && !reduced && el >= T.act && el < T.act + react.dur) { acting = true; rk = (el - T.act) / react.dur; const m = react.motion(rk); dx = m.dx; dy = m.dy; sx = m.sx; sy = m.sy; }
+      if (first && !quick && !reduced && el >= T.act && el < T.act + react.dur) { acting = true; rk = (el - T.act) / react.dur; const m = react.motion(rk); dx = m.dx; dy = m.dy; sx = m.sx; sy = m.sy; }
       let eat = 0;
       if (first && el >= T.food && el < T.home + 400) { // munching: squash in time with the bites
         eat = Math.min(4, ((el - T.food) / ((T.home - T.food) / 4)) | 0);
@@ -228,8 +235,8 @@ export function installReveal(app: App): void {
   });
 
   // queue reveals so two quick calls never overlap
-  app.setReveal((id: string) => {
-    const p = chain.then(() => run(id));
+  app.setReveal((id: string, opts?: { quick?: boolean }) => {
+    const p = chain.then(() => run(id, !!opts?.quick));
     chain = p.catch(() => undefined);
     return p;
   });

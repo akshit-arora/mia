@@ -27,8 +27,8 @@ export interface App {
   back(): void;
   launch(def: GameDef): void;
   exitGame(): void;
-  reveal(id: string): Promise<EarnResult>;
-  setReveal(fn: (id: string) => Promise<EarnResult>): void;
+  reveal(id: string, opts?: { quick?: boolean }): Promise<EarnResult>;
+  setReveal(fn: (id: string, opts?: { quick?: boolean }) => Promise<EarnResult>): void;
   /** Hotspot: a real <button> positioned in logical canvas pixels (centre cx,cy and size w,h). Min 56 CSS px. */
   hot(o: HotOpts): HTMLButtonElement;
   place(el: HTMLElement, cx: number, cy: number, w: number, h: number): void;
@@ -44,7 +44,7 @@ export function createApp(stage: Stage, kit: Kit, ui: HTMLElement): App {
   let cur: Screen | null = null;
   let curName: ScreenName = 'home';
   let game: { def: GameDef; root: HTMLElement; cleanups: Array<() => void>; done: boolean } | null = null;
-  let revealFn: (id: string) => Promise<EarnResult> = () => Promise.reject(new Error('reveal not ready'));
+  let revealFn: (id: string, opts?: { quick?: boolean }) => Promise<EarnResult> = () => Promise.reject(new Error('reveal not ready'));
   const stats = { frames: 0, drawMs: 0, drawMax: 0 };
   const debug = /[?&]debug\b/.test(location.search);
 
@@ -89,7 +89,7 @@ export function createApp(stage: Stage, kit: Kit, ui: HTMLElement): App {
     },
     place,
     setReveal(fn) { revealFn = fn; },
-    reveal(id) { return revealFn(id); },
+    reveal(id, opts) { return revealFn(id, opts); },
     currentGame: () => (game && !game.done ? game.def.id : null),
     launch(def) {
       if (game && !game.done) return;
@@ -106,7 +106,7 @@ export function createApp(stage: Stage, kit: Kit, ui: HTMLElement): App {
         stage, kit, audio, container: root, t,
         caption: (key, ms) => showText(key, 'bholu', ms ?? 2600),
         earn: (id) => getStore().earn(id),
-        reveal: (id) => revealFn(id),
+        reveal: (id, opts) => revealFn(id, opts),
         owned: () => getStore().owned(),
         levelOf: (id) => getStore().levelOf(id),
         isRevealing: () => app.revealing,

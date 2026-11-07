@@ -34,7 +34,8 @@ export class Stage {
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d', { alpha: false })!;
-    this.ctx.imageSmoothingEnabled = false;
+    this.ctx.imageSmoothingEnabled = true;
+    this.ctx.imageSmoothingQuality = 'high';
     window.addEventListener('resize', () => this.resize());
     window.addEventListener('orientationchange', () => setTimeout(() => this.resize(), 100));
     const pt = (e: PointerEvent): PointerEv => {
@@ -75,7 +76,8 @@ export class Stage {
     this.canvas.height = this.H;
     this.canvas.style.width = this.W * this.scale + 'px';
     this.canvas.style.height = this.H * this.scale + 'px';
-    this.ctx.imageSmoothingEnabled = false;
+    this.ctx.imageSmoothingEnabled = true;
+    this.ctx.imageSmoothingQuality = 'high';
     this.onResize();
     this.invalidate();
   }
