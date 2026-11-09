@@ -1,0 +1,118 @@
+# V1 Definition of Done — Jungle + Buddies
+
+Review baseline: `a9c65e1`; final re-review of implementer commit `10016ad` in section 5. Source of truth: `V1_BRIEF.md`.
+Statuses: **DONE** = code evidence exists and a test or read-through confirms it; **PARTIAL** = built but differs from the brief or unverified; **MISSING** = not in code. "Human" = only a child at a phone can prove it. Nothing here is DONE for acceptance criteria until the playtest (`PLAYTEST.md`) passes: code can only make a criterion *possible*.
+
+## 1. Contradictions between code and brief (decide before playtest)
+
+The brief is not rewritten. Each row needs an owner decision; my recommendation is first.
+
+| # | Brief says | Code does | Recommendation (one-line rationale) |
+|---|---|---|---|
+| C1 | 4 jungle friends (bear, monkey, elephant, peacock) | `WILD_ANIMALS` in `logic.ts` has 6 (adds lion, tiger; `meal` food); `cards.json` Jungle shelf has the same 6 | Gate the offer pool to the 4 via a `V1_ANIMALS` list in `logic.ts`; lion/tiger have no food behaviour or art pass, so shipping them dilutes "one confident style". |
+| C2 | 2 buddies (Gajju trunk, Bunty climb), "1 badge + 1 secret" | `abilities.ts` has 6 effects (roar, pounce, trunk, climb, sniff, fan); `BADGES` has 3 (clean/full/secret) | Keep trunk+climb enabled; leave sniff/fan (brief lists them as deferrable) behind the same V1 list; keep all 3 badges only if the reveal screen already shows them, else show 1. Fewer buddies makes the "who did what" test cleaner. |
+| C3 | Basket holds 5, trail **offers 6**; leaving the 6th is a decision | `DEFAULT_ROUND.need=5`; `index.ts` streams spawns continuously (`ITEM_POOL 10`), run ends the instant `carried>=5`. No 6th-item guarantee exists; surplus food just scrolls past | Add a rule: trail contains exactly 6 wanted foods before the Meet beat (or spawn a 6th with the 5th pickup) so criterion 4 is observable; otherwise it cannot be tested. |
+| C4 | "Picking one of three foods" changes the trail (criterion 3) | Friend-first: the animal fixes the food (`FOOD_OF`); no food choice screen. `forage.pick` locale key is unused. Child picks friend (of 3) and route (of 3) | Reword criterion 3 to "picking a friend changes the food and trail" (matches V1_BRIEF Promise and the build order step 1), not add a food screen; the friend-first redesign is the intended loop. Needs owner sign-off. |
+| C5 | **Giraffe must stay unseen**; transfer test with 3 foods | No `giraffe` anywhere in `src/` (grep clean) so unseen: good. But there is also no in-game or prop support for the test | Run the transfer test as a facilitator protocol with paper cards/props (see `PLAYTEST.md`), outside the build; keep giraffe out of `entities.json`/atlas for ever until the test is done. |
+| C6 | Farm and House "coming soon", **not playable** | `src/games/farm/index.ts` registers a playable game; `tests/farm.test.ts`, `house.test.ts` exist; `home.ts` still has three live doors | Gate farm/house doors with a "coming soon" tile (a flag in `home.ts`/registry); a wandering child is a stop-rule failure. Needs the implementer's confirmation of what `home.ts` renders. |
+| C7 | One biome, **day + rain** | `Biome = 'jungle' \| FoodId`; "rain" appears nowhere in `src/games/forage/`. Background switches per *food*, not weather | Rain is on the brief's own Deferred list: mark it deferred in the contract rather than build it; day-only is acceptable for v1. |
+| C8 | Fixed **240x135**, letterboxed, integer scale | `engine/stage.ts`: `W = max(240, min(300, round(135*aspect)))` (varies 240-300); scale = floor | Lock `W=240` with letterbox (ART_BIBLE s3 and brief Risks both require it). Largest visual risk, small code change. |
+| C9 | Captions for **every sound** | `index.ts` calls `setCaptionStyle({hideSfx:true})`, which suppresses `cc.sfx.*` captions | Remove `hideSfx` for the Jungle (or add captions for the sounds that carry meaning); the brief's accessibility row depends on it. |
+| C10 | No glow/arrow/hand after run one (crit. 1, 8) | `hintOn` only for `firstTimer`, good; but Meet pulses the friend for **everyone** (`index.ts` ~L354 "pulse the friend... feed me") | Keep one pulse only if it does not appear when the child has already tapped once; test for it in the playtest, since pulsing is the glow the stop rule is about. |
+| C11 | Buddy shortcuts: "Gajju trunk (high shortcut), Bunty climb (vine shortcut)" | Trunk = never spills on bump; climb = `high` route always shows secret. Neither is a shortcut/new route | Accept as "visible different outcome" for v1 only if the child can name it; otherwise add a visible route effect. Decide after playtest crit. 2. |
+| C12 | Cards: "no card levels" | `progress.ts` keeps MAX_LEVEL 4, `earn()` levels up; reveal can show level-up | Hide level UI in v1 (do not delete data); brief puts levels 2-4 out of scope. |
+
+## 2. "Must ship" list
+
+Brief: steps 1-3, 5, captions, 3 animals; four things: food choice that changes play, basket that makes you choose, friend you feed by hand, buddy that changes the route; one style.
+
+| Item | Status | Evidence / reason |
+|---|---|---|
+| Step 1 Friend-first + capacity + food behaviours | PARTIAL | `Round.begin/pickup`, `BEHAVIOUR_OF`, `index.ts` bounce (hop at `it.x < W*0.55`), sticky (`stickT`), heavy (basket lerp 170 vs 70 ms), scatter (extra spawn). Tests in `tests/forage.test.ts` (20). Capacity forces no *choice* yet (C3). Human: do behaviours read without a word. |
+| Step 2 Meet + ~3 s stamp | PARTIAL | `Ph.Meet`, `Round.feed()` one input, `meetMs 1200`, `api.reveal(friend,{quick:true})` in `reveal.ts` (350 ms walk). Total time not measured. Human: stopwatch meet-to-stamp ~3 s. Body-explains-feeding (trunk up branch etc.) not verified in code. |
+| Step 3 Buddy pick + 2 abilities + optional shortcut | PARTIAL | `pickBuddies`, `Round.begin(buddy, effect)`, `abilities.ts`; null buddy completes (`forage.test.ts` L134). Effects are not shortcuts (C11); 6 not 2 (C2). |
+| Step 5 Art pass: palette, fixed 240x135, flat vector | PARTIAL | `art.ts` builds sprites in canvas; but stage width is variable (C8); palette compliance (22 tokens, no gradients/alpha/blur) unaudited; `index.ts` uses ad-hoc `PCOL` hexes and `#ffffff` (not ART_BIBLE tokens). Needs a grep audit for `globalAlpha`, `shadowBlur`, `createLinearGradient`. |
+| Captions | PARTIAL | `api.caption(...)` used for friend/buddy/secret/look; locale keys exist; sfx captions hidden (C9). Hindi key parity (`hi.json`) unchecked. |
+| 3 animals (minimum) | DONE (over-delivered) | 6 animals each with food + effect (C1). Art quality unjudged. |
+| Food choice changes play | PARTIAL | Friend sets food and behaviour; no food menu (C4). |
+| Basket makes you choose | MISSING (observable) | See C3. |
+| Friend you feed by hand | DONE (code) | `feed()` on one tap; Human: child discovers the tap unaided. |
+| Buddy changes the route | PARTIAL | `secretChance`, `hazardCount`; route is chosen by the child, buddy only tilts odds. |
+
+## 3. The nine acceptance criteria
+
+| # | Criterion | Status | Code evidence | Still needs human |
+|---|---|---|---|---|
+| 1 | Starts alone; moves in <=10 s; no hint after run 1 | PARTIAL | Ask board is tap-only (`pickTile`), lane tap/swipe/keys (`setLane`); arrow hint limited to `firstTimer` (`hintOn`). Hint re-arms at the fork on round 1. | Stopwatch first action; confirm no hint on run 2+; check pulse (C10). |
+| 2 | Picks a buddy with one tap; buddy changes the trail; child names it | PARTIAL | `askStep 1` buddy row with solo tile (`''`); `effectOf`; `EFFECT_LINE` text exists in `abilities.ts` but is not wired (grep shows no use in `index.ts`). Buddy only appears if the child owns a *second* animal, so the first run never offers one. | Buddy offered only from run 2; child must name the effect. |
+| 3 | Food choice visible (honey drags/bees, fruit bounces) | PARTIAL | Behaviours implemented (see step 1); bees used as honey hazard (`spawn(K_HAZARD, l, honey?1:0)`). No food choice (C4). | Does the child react aloud / chase fruit? |
+| 4 | Fills basket to 5 with a 6th on screen and leaves it | MISSING | No 6th-item rule (C3). Run ends at 5 so nothing is "left". No penalty exists for leaving. | Whether the child ever hesitates over a choice. |
+| 5 | A mistake is funny; no fail, timer, lost card | DONE (code) | `Round.bump` spills 1 item, never ends; no timer/lives (header comment; no fail phase in `Ph`). Wobble animation + sting. | Laugh/shrug vs frustration. |
+| 6 | Feeds in one input; body explains; card stamps ~3 s | PARTIAL | See step 2. Food "hops" from basket to friend (`feedT`). No trunk/teeth animation found. | Timing; does body explain. |
+| 7 | Giraffe transfer test | MISSING (by design) | Cannot be in-game; giraffe absent from `src/` (good, C5). | Entire protocol, props, scoring. Must happen with props. |
+| 8 | No waiting for the glow | PARTIAL | Hint gated by `firstTimer`; `tile(..., hot)` highlight is finger-under only. Meet pulse (C10). | 0/5 wait >10 s; 0/5 touch only highlight. |
+| 9 | Asks for one more at 8 min | MISSING (human) | Nothing to build; measured in the session. Loop returns to Ask after each reveal (`round.next(); openAsk()`), which makes "one more" a single tap. | Say "you may stop" at minute 8, record. |
+
+## 4. Other checks before handing to children (cheap, code-checkable)
+
+- [ ] `npm test` green, including null-buddy completion (`forage.test.ts` L134 present).
+- [ ] `npm run build` and `npm run size` within 40 KB art budget (ART_BIBLE s8).
+- [ ] Grep audit: no `globalAlpha`, `shadowBlur`, gradients, `#000` in `src/games/forage/` and `src/cards/`.
+- [ ] No `giraffe` token anywhere in `src/` or atlas assets.
+- [ ] Hindi (`hi.json`) has every `forage.*` key.
+- [ ] Draw budget <= 25 calls/frame (`?debug` readout).
+- [ ] Test on the target phone at 1x and 2x, 48 px targets, reduced motion on.
+- [ ] Progress key `mia.cards.v1` cleared between playtest children (`reset()` or fresh profile); `?unlock=all` OFF.
+
+## 5. Final review status
+
+Re-reviewed against `10016ad` ("Finish Jungle v1"). 159 tests pass (13 files). Working tree clean except these docs.
+
+### Contradiction resolutions after the commit
+
+| # | Result | Evidence |
+|---|---|---|
+| C1 6 animals | STILL OPEN | `logic.ts` WILD_ANIMALS unchanged; lion/tiger still offered but have no vector sprite (`hasVector` falls back to the old kit emoji sprite): visible style break. |
+| C2 6 buddies / 3 badges | STILL OPEN | `abilities.ts` unchanged. |
+| C3 basket 5 / offers 6 | STILL OPEN | Round logic unchanged; criterion 4 still not observable. |
+| C4 no food choice | STILL OPEN | Owner decision: reword criterion 3. |
+| C5 giraffe | OK | No giraffe in sprites/data; `tests/forage-v1.test.ts` asserts `drawAnimal('giraffe')` is false. |
+| C6 Farm/House | FIXED (partly) | `main.ts` no longer imports farm/house, so doors render closed with `home.soon`. **New gap: Card clash (`games/trump`) is still imported and reachable from the home picture button; brief puts it out of scope.** |
+| C7 rain | OPEN, accept as deferred | No rain variant. |
+| C8 fixed 240x135 | FIXED, with deviation | `stage.ts` W/H fixed, `fitScale`. Brief and ART_BIBLE say integer scale only; `fitScale` returns a fractional scale when integer wastes >20%, which blurs the pixels the brief wanted crisp. Verify on the phone. |
+| C9 captions | FIXED | `cue()` + `captionGate`, `cc.forage.*` keys in en.json for pickup, streak, sting, rustle, bump, secret, buddy, feed, meet. Hindi (`hi.json`) has **0** `cc.forage.*` keys; `hideSfx:true` is still set, but only filters `cc.sfx.*`. |
+| C10 meet pulse | OPEN | Unchanged. |
+| C11 buddy not a shortcut | OPEN | Unchanged. |
+| C12 card levels | OPEN | `progress.ts` unchanged. |
+
+### Final statuses
+
+| Item | Status |
+|---|---|
+| Must ship: step 1 friend-first + behaviours | PARTIAL (no choice, C3/C4) |
+| Must ship: step 2 meet + stamp | PARTIAL (cues added; timing and body-explains unverified) |
+| Must ship: step 3 buddy | PARTIAL (not a shortcut) |
+| Must ship: step 5 art, fixed 240x135 | PARTIAL: 4 vector animals in 2 poses (`sprites.ts`) done; fixed stage done; lion/tiger and food sprites off-style; `cards/scenes.ts:18` still uses `createLinearGradient` (ART_BIBLE forbids); palette audit and 1x/2x phone check not done |
+| Must ship: captions | DONE in English, PARTIAL overall (Hindi) |
+| Must ship: 3 animals | DONE |
+| Doors Farm/House closed | DONE |
+| Crit 1 starts alone | PARTIAL (human) |
+| Crit 2 buddy | PARTIAL (human; buddy only offered after a second animal is owned; `EFFECT_LINE` still unused) |
+| Crit 3 food choice | PARTIAL (reword) |
+| Crit 4 choose what to carry | MISSING |
+| Crit 5 mistake is funny | DONE in code, human to confirm |
+| Crit 6 feed + stamp | PARTIAL (human) |
+| Crit 7 giraffe | MISSING by design: facilitator props only |
+| Crit 8 no waiting for glow | PARTIAL (human) |
+| Crit 9 one more | human only |
+
+### Remaining gaps before kids touch it
+1. Hide lion/tiger (and optionally sniff/fan) via a V1 list, or sprite them: one mixed-style animal ruins the "one confident style" bet.
+2. Remove or gate the Card clash button (scope).
+3. Add the 6th food rule (C3) or drop criterion 4 from the pass list.
+4. Add `cc.forage.*` to `hi.json`; run `npm run build && npm run size`; phone test at 1x/2x.
+
+### Top 3 risks
+1. Criterion 4 and the "buddy changes the route" promise are not observably built: the playtest could fail on design, not on kids.
+2. Style inconsistency (lion/tiger emoji, gradient scenes in `cards/scenes.ts`, fractional scaling) undermines the art bet.
+3. Scope leakage: Card clash reachable, buddy offered only from run 2, first-session buddy test (crit 2) may not occur within the 10 minutes; set `PLAYTEST.md` to pre-own one animal or accept run 2+.
