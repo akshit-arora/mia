@@ -365,9 +365,13 @@ export const audio = {
     } catch { /* never throw */ }
   },
 
-  /** Play a recipe a game made itself (no caption). Respects mute. */
-  play(r: Recipe): void {
-    try { if (muted || !ensureCtx()) return; playRecipe(r, sfxBus); } catch { /* never throw */ }
+  /** Play a recipe a game made itself. Pass a locale key to caption it (the caption shows even when muted). Respects mute. */
+  play(r: Recipe, captionKey?: string): void {
+    try {
+      if (captionKey) emit({ kind: 'sound', key: captionKey, ms: Math.max(1600, Math.round(r.dur * 1000)) });
+      if (muted || !ensureCtx()) return;
+      playRecipe(r, sfxBus);
+    } catch { /* never throw */ }
   },
 
   animal(id: string): void {

@@ -1,4 +1,4 @@
-// Forage Trail: tiny synthesized sounds, made once as recipes for audio.play(). Not captioned (the picture shows them).
+// Forage Trail: tiny synthesized sounds, made once as recipes for audio.play(). Every cue has a caption key in CAPTION (locale en.json, 2-6 words).
 // Never played loudly: peak gains are low; the shared limiter and the mute switch still apply.
 import type { Layer, Recipe } from '../../audio/recipes';
 import type { FoodId } from './logic';
@@ -39,3 +39,23 @@ export const STREAK: Recipe = recipe('streak', [1568, 1975.5, 2349.3, 3135.9].ma
 export const SETDOWN: Recipe = recipe('setdown', [note('triangle', 220, 0, 0.18, 0.25, { filter: { type: 'lowpass', f0: 600 } }), note('sine', 330, 0.1, 0.22, 0.12)]);
 /** the bush rustles */
 export const RUSTLE: Recipe = recipe('rustle', [{ kind: 'noise', f0: 0, t: 0, dur: 0.5, gain: 0.12, attack: 0.05, release: 0.3, filter: { type: 'bandpass', f0: 2600, f1: 1200, q: 0.9 }, amHz: 14, amDepth: 0.6 }]);
+
+/** A bump: a soft low thud and a rubbery boing. Funny, never harsh. */
+export const BUMP: Recipe = recipe('bump', [
+  note('sine', 180, 0, 0.14, 0.26, { f1: 90 }),
+  note('triangle', 330, 0.08, 0.22, 0.14, { f1: 520, vibHz: 9, vibDepth: 25 }),
+]);
+/** The secret star: a small rising sparkle. */
+export const SECRET: Recipe = recipe('secret', [880, 1174.7, 1568, 2093].map((f, i) => note('sine', f, i * 0.06, 0.2, 0.13, { release: 0.15 })));
+/** A buddy hops aboard: two quick bouncy notes. */
+export const BUDDY: Recipe = recipe('buddy', [note('triangle', 392, 0, 0.1, 0.2), note('triangle', 587.33, 0.09, 0.16, 0.2)]);
+/** Feeding: three soft munches. */
+export const FEED: Recipe = recipe('feed', [0, 0.14, 0.28].map((t) => ({ kind: 'noise', f0: 0, t, dur: 0.1, gain: 0.16, attack: 0.012, release: 0.07, filter: { type: 'lowpass', f0: 900, f1: 400, q: 0.8 } }) as Layer));
+/** Meeting the friend: a warm two-note hello (with the rustle just before it). */
+export const MEET: Recipe = recipe('meet', [note('sine', 523.25, 0, 0.18, 0.2), note('sine', 659.25, 0.12, 0.3, 0.2)]);
+
+/** Locale keys for every cue (all must exist in en.json; tests/forage.test.ts checks 2-6 words). */
+export const CAPTION = {
+  pickup: 'cc.forage.pickup', streak: 'cc.forage.streak', sting: 'cc.forage.sting', rustle: 'cc.forage.rustle',
+  bump: 'cc.forage.bump', secret: 'cc.forage.secret', buddy: 'cc.forage.buddy', feed: 'cc.forage.feed', meet: 'cc.forage.meet',
+} as const;

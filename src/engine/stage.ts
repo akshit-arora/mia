@@ -1,4 +1,15 @@
 // Micro-engine: logical-resolution canvas, integer scaling, dirty-flag loop, tweens, pointer input.
+/** Fixed logical canvas: 240 x 135, letterboxed by the page (centred, night background). */
+export const LOGICAL_W = 240;
+export const LOGICAL_H = 135;
+/** Integer scale when it wastes little (>= 80% of the best fit); otherwise the fractional best fit. Never above the viewport. */
+export function fitScale(vw: number, vh: number): number {
+  const s = Math.min(Math.max(vw, 1) / LOGICAL_W, Math.max(vh, 1) / LOGICAL_H);
+  if (s < 1) return s;
+  const i = Math.floor(s);
+  return i / s >= 0.8 ? i : s;
+}
+
 export type Ease = (t: number) => number;
 export const easeOut: Ease = (t) => 1 - (1 - t) * (1 - t);
 export const easeInOut: Ease = (t) => (t < 0.5 ? 2 * t * t : 1 - 2 * (1 - t) * (1 - t));
@@ -67,11 +78,9 @@ export class Stage {
   }
 
   resize(): void {
-    const vw = window.innerWidth, vh = window.innerHeight;
-    const aspect = Math.max(vw, 1) / Math.max(vh, 1);
-    this.H = 135;
-    this.W = Math.max(240, Math.min(300, Math.round(135 * aspect)));
-    this.scale = Math.max(1, Math.floor(Math.min(vw / this.W, vh / this.H)));
+    this.H = LOGICAL_H;
+    this.W = LOGICAL_W;
+    this.scale = fitScale(window.innerWidth, window.innerHeight);
     this.canvas.width = this.W;
     this.canvas.height = this.H;
     this.canvas.style.width = this.W * this.scale + 'px';

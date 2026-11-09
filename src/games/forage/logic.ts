@@ -240,3 +240,12 @@ export function pickLane(current: number, rng: Rng): number {
   const other = rng() < 0.5 ? 1 : 2;
   return (current + other) % 3;
 }
+
+// ---------------------------------------------------------------- caption throttle
+/** A cue that repeats (a pickup per food) should not flood the captions: caption a key only once per `gap` ms. */
+export function captionGate(last: Map<string, number>, key: string, now: number, gap = 1800): boolean {
+  const t = last.get(key);
+  if (t !== undefined && now - t < gap) return false;
+  last.set(key, now);
+  return true;
+}

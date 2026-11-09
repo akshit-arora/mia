@@ -3,6 +3,7 @@
 import type { Kit } from '../../cards/kit';
 import { INK, disc, mk, type Cv } from '../../cards/scenes';
 import type { FoodId, RouteId } from './logic';
+import { drawAnimal, type Pose } from './sprites';
 
 type G = CanvasRenderingContext2D;
 export type Biome = 'jungle' | FoodId;
@@ -257,4 +258,11 @@ export function tile(sprite: Cv, size = 52, hot = false): Cv {
   g.fillStyle = '#fff6dc'; g.fillRect(4, 4, size - 8, size - 8);
   g.drawImage(sprite, Math.round((size - sprite.width) / 2), Math.round((size - sprite.height) / 2));
   return c;
+}
+
+/** A flat-vector animal rendered once at `size` px square (see sprites.ts). Returns null when the animal has no vector sprite. */
+export function vectorAnimal(id: string, pose: Pose, size: number): Cv | null {
+  const [c, g] = mk(size, size);
+  g.scale(size / 64, size / 64);
+  return drawAnimal(g, id, pose) ? c : null;
 }

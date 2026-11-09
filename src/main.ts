@@ -16,8 +16,8 @@ import { createKit } from './cards/kit';
 import { getStore } from './cards/progress';
 import { isCard } from './cards/data';
 import './games/forage'; // Jungle door: Forage Trail (registers itself)
-import './games/farm'; // Farm door: Morning Round (registers itself)
-import './games/house'; // House door: Play Yard (registers itself)
+// Farm and House doors are "coming soon" in v1 (docs/design/V1_BRIEF.md): their games are not imported, so gameForShelf() is undefined
+// and the home screen shows the closed door. The code stays in src/games/{farm,house} for later.
 import './games/trump'; // home picture button: Card clash (registers itself)
 import atlasJson from './gen/atlas.json';
 import atlasUrl from './gen/atlas.png';

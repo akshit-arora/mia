@@ -9,15 +9,17 @@ import { effectOf } from '../../cards/abilities';
 import { getBadgeStore } from '../../cards/badges';
 import { abilityOf, shelfCards } from '../../cards/data';
 import { setCaptionStyle } from '../../ui/captions';
+import type { Recipe } from '../../audio/recipes';
 import {
   FAR_H, GND_H, basketImages, bushSprite, butterflies, farLayer, flowerSprite, foodBadge, groundLayer, hazardSprites, routeSign,
-  secretSprite, shelfStrip, tile, type Biome,
+  secretSprite, shelfStrip, tile, vectorAnimal, type Biome,
 } from './art';
 import {
-  BASKET_X, BEHAVIOUR_OF, DEFAULT_ROUND, FOODS, LANE_Y, Ph, ROUTE, ROUTES, Round, SNIFF_BONUS_FOOD, foodOf, laneAt, newWaitingMemory,
+  BASKET_X, BEHAVIOUR_OF, captionGate, DEFAULT_ROUND, FOODS, LANE_Y, Ph, ROUTE, ROUTES, Round, SNIFF_BONUS_FOOD, foodOf, laneAt, newWaitingMemory,
   pickBuddies, pickLane, pickWaiting, rollSpawn, secretChance, topFor, type FoodId,
 } from './logic';
-import { PICKUP, RUSTLE, STING, STREAK } from './sounds';
+import { hasVector, POSES, type Pose } from './sprites';
+import { BUDDY, BUMP, CAPTION, FEED, MEET, PICKUP, RUSTLE, SECRET, STING, STREAK } from './sounds';
 
 const BX = BASKET_X;
 const SPEED = 48; // px per second
@@ -27,6 +29,7 @@ const ITEM_POOL = 10, PART_POOL = 12;
 const SHELF_X = 36, SHELF_Y = 2;
 const PCOL = ['#ffd93d', '#ff7aa8', '#7fe0ff', '#9be564', '#ffffff'];
 const TILE = 52;
+const ANIMAL_PX = 40, BUDDY_PX = 24; // sprite sizes on the tile / trail, and the buddy riding the basket
 
 interface Item { x: number; lane: number; kind: number; on: boolean; ph: number; sub: number; hopped: boolean }
 interface Part { x: number; y: number; vx: number; vy: number; life: number; c: number }
@@ -66,12 +69,24 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
   const soloTile = tile(basket[0], TILE);
   const soloTileHot = tile(basket[2], TILE, true);
   const tileCache = new Map<string, HTMLCanvasElement>();
+  // flat-vector animals (sprites.ts): rendered once per (animal, pose, size) here, never in the frame loop. Others use the kit sprite.
+  const vecCache = new Map<string, HTMLCanvasElement>();
+  const animalImg = (id: string, size: number, pose: Pose = 0): HTMLCanvasElement => {
+    const k = id + ':' + pose + ':' + size;
+    let c = vecCache.get(k);
+    if (!c) { c = (hasVector(id) ? vectorAnimal(id, pose, size) : null) ?? kit.animal(id, size); vecCache.set(k, c); }
+    return c;
+  };
+  for (const id of WILD) for (const pose of POSES) { animalImg(id, ANIMAL_PX, pose); animalImg(id, BUDDY_PX, pose); }
   const animalTile = (id: string, hot: boolean): HTMLCanvasElement => {
     const k = id + (hot ? '!' : '');
     let c = tileCache.get(k);
-    if (!c) { c = tile(kit.animal(id, 40), TILE, hot); tileCache.set(k, c); }
+    if (!c) { c = tile(animalImg(id, ANIMAL_PX), TILE, hot); tileCache.set(k, c); }
     return c;
   };
+  // cues: a sound plus its caption, throttled so a run of pickups does not flood the captions
+  const lastCap = new Map<string, number>();
+  const cue = (r: Recipe, key: string, gap = 1800): void => audio.play(r, captionGate(lastCap, key, performance.now(), gap) ? key : undefined);
 
   // scenery: tile-wrapped, rebuilt when the canvas width changes
   let T = 0;
@@ -112,7 +127,8 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
   let hot = -1; // tile under the finger
   let lane = 1, basketY = LANE_Y[1];
   let scrollX = 0, speedK = 1, lastNow = 0, blinkT = 3000, hop = 0, wobble = 0, shelfBounce = 0, stickT = 0;
-  let spawnT = 0, sinceHit = 0, secretT = -1, sniffed = false;
+  let friendImgs: HTMLCanvasElement[] = [], buddyImgs: HTMLCanvasElement[] = [];
+  let spawnT = 0, sinceHit = 0, secretT = -1, sniffed = false, meetHello = false;
   let moved = !firstTimer, hintOn = firstTimer, revealing = false, meetStart = false, feedT = 0, enterT = 0;
   let calls = 0, maxCalls = 0, rounds = 0, lastCarried = 0;
   const stats = { frames: 0, drawMs: 0, drawMax: 0, maxCalls: 0, rounds: 0 };
@@ -165,11 +181,13 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
   const begin = (buddy: string | null): void => {
     const effect = effectOf(buddy, abilityOf);
     round.begin(pickedFriend, buddy, effect);
+    friendImgs = POSES.map((p) => animalImg(pickedFriend, ANIMAL_PX, p)); // resolved once per run: the frame loop never builds keys
+    buddyImgs = buddy ? POSES.map((p) => animalImg(buddy, BUDDY_PX, p)) : [];
     farCur = foodOf(pickedFriend) as Biome; far(farCur);
     clearItems(); sign.on = false; sign.done = false; speedK = 1; spawnT = -600; sinceHit = 0; secretT = -1; sniffed = false;
     meetStart = false; feedT = 0; lastCarried = 0; stickT = 0;
     lane = 1; basketY = LANE_Y[1]; rounds++; stats.rounds = rounds;
-    audio.play(STING[round.food]);
+    cue(STING[round.food], CAPTION.sting);
   };
 
   const pickTile = (i: number): void => {
@@ -184,7 +202,7 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
       askStep = 1; hot = -1; api.caption('forage.buddy', 3000);
     } else {
       const b = list[i] || null;
-      if (b) { mem.lastBuddy = b; audio.animal(b); }
+      if (b) { mem.lastBuddy = b; audio.animal(b); cue(BUDDY, CAPTION.buddy); }
       audio.sfx('pop'); begin(b);
     }
   };
@@ -221,15 +239,15 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
           if (it.kind === K_FOOD) {
             hop = 160; burst(BX + 8, LANE_Y[lane] - 6, 3);
             round.pickup(); const c = round.carried;
-            audio.play(PICKUP[round.food][(c - 1) % 5]);
+            cue(PICKUP[round.food][(c - 1) % 5], CAPTION.pickup, 2500);
             if (BEHAVIOUR_OF[round.food] === 'sticky' && round.effect !== 'fan') { stickT = 650; }
-            if (c % 3 === 0 && c < round.opts.need) { audio.play(STREAK); burst(BX + 8, LANE_Y[lane] - 14, 8); }
+            if (c % 3 === 0 && c < round.opts.need) { cue(STREAK, CAPTION.streak); burst(BX + 8, LANE_Y[lane] - 14, 8); }
           } else if (it.kind === K_GIFT) {
             hop = 160; burst(BX + 8, LANE_Y[lane] - 6, 5); audio.sfx('sparkle');
           } else if (it.kind === K_SECRET) {
-            round.findSecret(); burst(BX + 8, LANE_Y[lane] - 12, 12); audio.play(STREAK); api.caption('forage.secret', 2200);
+            round.findSecret(); burst(BX + 8, LANE_Y[lane] - 12, 12); cue(SECRET, CAPTION.secret, 600);
           } else { // hazard: a funny wobble, a spill, nothing lost for good
-            wobble = 450; round.bump(); audio.sfx('wobble'); burst(BX + 8, LANE_Y[lane] - 10, 5);
+            wobble = 450; round.bump(); cue(BUMP, CAPTION.bump, 600); burst(BX + 8, LANE_Y[lane] - 10, 5);
           }
         }
       }
@@ -268,8 +286,9 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
       }
     }
     if (round.phase === Ph.Meet) {
-      if (!meetStart) { meetStart = true; clearItems(); sign.on = false; enterT = 0; hop = 200; hintOn = false; audio.play(RUSTLE); api.caption('forage.look', 3000); }
+      if (!meetStart) { meetStart = true; meetHello = false; clearItems(); sign.on = false; enterT = 0; hop = 200; hintOn = false; cue(RUSTLE, CAPTION.rustle); api.caption('forage.look', 3000); }
       enterT += dt;
+      if (!meetHello && enterT >= 650) { meetHello = true; cue(MEET, CAPTION.meet); }
       speedK = Math.max(0.1, speedK - dt / 600);
       if (round.fed) feedT += dt;
     }
@@ -349,8 +368,7 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
       const k = Math.min(1, enterT / 700);
       g.drawImage(bush, W - 44, LANE_Y[1] - 30); n++;
       const fx = Math.round(W - 90 + (1 - k) * 60), fy = LANE_Y[1] - 38 + (round.fed ? -Math.round(Math.abs(Math.sin(feedT / 90)) * 4) : 0);
-      const fs = kit.animal(round.friend, 32);
-      g.drawImage(fs, fx, fy, 40, 40); n++;
+      g.drawImage(friendImgs[round.fed ? 1 : 0], fx, fy); n++;
       if (!round.fed && k >= 1 && !stage.reduced) { // pulse the friend, not an arrow: "feed me"
         const o = Math.round(Math.abs(Math.sin(now / 280)) * 3);
         g.drawImage(icons[FOODS.indexOf(round.food)], fx + 8, fy - 24 - o, 24, 24); n++;
@@ -361,7 +379,7 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
     const wob = wobble > 0 && !stage.reduced ? Math.round(Math.sin(wobble / 28) * 3) : 0;
     const happy = ph === Ph.Meet || ph === Ph.Reveal;
     g.drawImage(basket[happy ? 2 : blinkT < 0 ? 1 : 0], BX - 20 + wob, topFor(by, 34)); n++;
-    if (round.buddy) { g.drawImage(kit.animal(round.buddy, 20), BX - 10 + wob, topFor(by, 34) - 14); n++; }
+    if (round.buddy && buddyImgs.length) { g.drawImage(buddyImgs[happy ? 1 : 0], BX - 12 + wob, topFor(by, 34) - 17); n++; }
     if (ph === Ph.Meet && round.fed) { // the food hops from the basket to the friend
       const k = Math.min(1, feedT / 500), s = 24;
       const fx = BX + (W - 90 + 8 - BX) * k, fy = by - 20 - Math.sin(k * Math.PI) * 24;
@@ -410,6 +428,12 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
   checkSize();
   stage.invalidate();
 
+  const doFeed = (): boolean => {
+    if (!round.feed()) return false;
+    cue(FEED, CAPTION.feed, 600); audio.sfx('pop'); burst(stage.W - 70, LANE_Y[1] - 20, 8);
+    return true;
+  };
+
   // ------------------------------------------------------------------ input
   // The game overlay sits over the canvas, so read pointer events from it (only when the touch is on the overlay, never a button).
   let downY = 0, swiped = false;
@@ -421,7 +445,9 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
     const list = tilesNow();
     for (let i = 0; i < list.length; i++) {
       const cx = tileX(i, list.length), cy = tileY();
-      if (Math.abs(x - cx) <= TILE / 2 + 5 && Math.abs(y - cy) <= TILE / 2 + 8) return i;
+      // never smaller than 48 device px, whatever the scale
+      const hx = Math.max(TILE / 2 + 5, 24 / stage.scale), hy = Math.max(TILE / 2 + 8, 24 / stage.scale);
+      if (Math.abs(x - cx) <= hx && Math.abs(y - cy) <= hy) return i;
     }
     return -1;
   };
@@ -431,7 +457,7 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
     try { container.setPointerCapture(e.pointerId); } catch { /* ignore */ }
     const p = logical(e);
     if (round.phase === Ph.Ask) { hot = tileAt(p.x, p.y); if (hot >= 0) pickTile(hot); return; }
-    if (round.phase === Ph.Meet) { if (round.feed()) { audio.sfx('pop'); burst(stage.W - 70, LANE_Y[1] - 20, 8); } return; }
+    if (round.phase === Ph.Meet) { doFeed(); return; }
     downY = p.y; swiped = false;
     setLane(laneAt(downY));
   };
@@ -450,7 +476,7 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
       if (e.key === '1' || e.key === '2' || e.key === '3' || e.key === '4') { pickTile(+e.key - 1); e.preventDefault(); }
       return;
     }
-    if (round.phase === Ph.Meet) { if (e.key === ' ' || e.key === 'Enter') { round.feed(); e.preventDefault(); } return; }
+    if (round.phase === Ph.Meet) { if (e.key === ' ' || e.key === 'Enter') { doFeed(); e.preventDefault(); } return; }
     if (e.key === 'ArrowUp' || e.key === 'w') { setLane(lane - 1); e.preventDefault(); }
     else if (e.key === 'ArrowDown' || e.key === 's') { setLane(lane + 1); e.preventDefault(); }
     else if (e.key === '1' || e.key === '2' || e.key === '3') setLane(+e.key - 1);
@@ -469,7 +495,7 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
       go(friend: string, buddy: string | null = null) { pickedFriend = friend; begin(buddy); return true; },
       /** fill the basket: jump to the Meet beat */
       fill() { for (let i = 0; i < round.opts.need; i++) round.pickup(); },
-      feed() { return round.feed(); },
+      feed() { return doFeed(); },
     };
   }
 
