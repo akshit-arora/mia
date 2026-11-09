@@ -11,6 +11,7 @@ import { ANIMAL_IDS } from '../src/cards/data';
 import { layerGainAt, peakSum, type Recipe } from '../src/audio/recipes';
 import * as forageSounds from '../src/games/forage/sounds';
 import * as dashSounds from '../src/games/dash/sounds';
+import * as houseSounds from '../src/games/house/sounds';
 
 const EN = en as unknown as Record<string, string>;
 const HI = hi as unknown as Record<string, string>;
@@ -47,7 +48,7 @@ function extractRecipes(mod: Record<string, unknown>): Recipe[] {
 }
 
 describe('v1 sanity: audio sound recipes', () => {
-  const allRecipes = [...extractRecipes(forageSounds), ...extractRecipes(dashSounds)];
+  const allRecipes = [...extractRecipes(forageSounds), ...extractRecipes(dashSounds), ...extractRecipes(houseSounds)];
 
   it('collects all game recipes', () => {
     expect(allRecipes.length).toBeGreaterThanOrEqual(20);
@@ -86,7 +87,8 @@ describe('v1 sanity: audio sound recipes', () => {
 describe('v1 sanity: caption key parity and length', () => {
   const forageKeys = Object.values(forageSounds.CAPTION);
   const dashKeys = Object.values(dashSounds.CAPTION);
-  const allCueKeys = [...forageKeys, ...dashKeys];
+  const houseKeys = Object.values(houseSounds.CAPTION);
+  const allCueKeys = [...forageKeys, ...dashKeys, ...houseKeys];
 
   it('all game cue caption keys exist in both en.json and hi.json', () => {
     for (const k of allCueKeys) {
@@ -95,8 +97,8 @@ describe('v1 sanity: caption key parity and length', () => {
     }
   });
 
-  it('all game UI keys (forage.*, dash.*) have parity in en and hi', () => {
-    const enKeys = Object.keys(EN).filter((k) => k.startsWith('forage.') || k.startsWith('dash.'));
+  it('all game UI keys (forage.*, dash.*, house.*) have parity in en and hi', () => {
+    const enKeys = Object.keys(EN).filter((k) => k.startsWith('forage.') || k.startsWith('dash.') || k.startsWith('house.'));
     for (const k of enKeys) {
       expect(HI[k], `hi.json has ${k}`).toBeTruthy();
     }
@@ -118,6 +120,8 @@ describe('v1 sanity: caption key parity and length', () => {
 describe('v1 sanity: flat vector palette audit (no forbidden styles in forage and cards)', () => {
   const dirsToCheck = [
     path.join(ROOT, 'src/games/forage'),
+    path.join(ROOT, 'src/games/dash'),
+    path.join(ROOT, 'src/games/house'),
     path.join(ROOT, 'src/cards'),
   ];
 

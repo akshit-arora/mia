@@ -145,10 +145,10 @@ describe('no-buddy completion (a buddy gate must never be required)', () => {
   });
 });
 
-describe('Card clash is out of v1 (files kept, not reachable)', () => {
-  it('main.ts does not import the clash, the old farm tap game or the house game; home.ts has no clash button', () => {
+describe('Card clash and old farm game are out of v1 (files kept, not reachable)', () => {
+  it('main.ts does not import the clash or the old farm tap game; home.ts has no clash button', () => {
     const main = src('src/main.ts'), home = src('src/app/home.ts');
-    for (const g of ['trump', 'farm', 'house']) expect(main, g).not.toMatch(new RegExp(`^import ['"]\\./games/${g}`, 'm'));
+    for (const g of ['trump', 'farm']) expect(main, g).not.toMatch(new RegExp(`^import ['"]\\./games/${g}`, 'm'));
     expect(home).not.toMatch(/games\/trump|clashBtn|ui\.clash/);
   });
   it('the clash files still exist for later', () => {

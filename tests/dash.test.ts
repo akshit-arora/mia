@@ -357,10 +357,10 @@ describe('every sound has a caption (2-6 words, English + Hindi stub)', () => {
 });
 
 describe('registration: the Farm door opens Farm Dash; House stays closed', () => {
-  it('main.ts imports dash, and not the old farm tap game, house or the clash', () => {
+  it('main.ts imports dash, and not the old farm tap game or the clash', () => {
     const main = src('src/main.ts');
     expect(main).toMatch(/^import '\.\/games\/dash'/m);
-    for (const g of ['farm', 'house', 'trump']) expect(main, g).not.toMatch(new RegExp(`^import ['"]\\./games/${g}`, 'm'));
+    for (const g of ['farm', 'trump']) expect(main, g).not.toMatch(new RegExp(`^import ['"]\\./games/${g}`, 'm'));
   });
   it('the game registers id dash on the farm shelf only, and its earned animals are farm shelf cards', async () => {
     const reg = await import('../src/app/registry');

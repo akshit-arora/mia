@@ -167,9 +167,9 @@ Said when an animal walks out to be met, and when the speaker button on a card i
 | `card.say.goat` | Chintu the goat! | Proud, delighted introduction | 4, bouncy | Stress the personal name; rising then falling |
 | `card.say.hen` | Kuku the hen! | Proud, delighted introduction | 4, bouncy | Stress the personal name; rising then falling |
 | `card.say.horse` | Chetak the horse! | Proud, delighted introduction | 4, bouncy | Stress the personal name; rising then falling |
-| `card.say.dog` | Moti the dog! | Proud, delighted introduction | 4, bouncy | Stress the personal name; rising then falling |
-| `card.say.cat` | Mini the cat! | Proud, delighted introduction | 4, bouncy | Stress the personal name; rising then falling |
-| `card.say.rabbit` | Bittu the rabbit! | Proud, delighted introduction | 4, bouncy | Stress the personal name; rising then falling |
+| `card.say.dog` | Tuffy the dog! | Proud, delighted introduction | 4, bouncy | Stress the personal name; rising then falling |
+| `card.say.cat` | Brownie the cat! | Proud, delighted introduction | 4, bouncy | Stress the personal name; rising then falling |
+| `card.say.rabbit` | Bunny the rabbit! | Proud, delighted introduction | 4, bouncy | Stress the personal name; rising then falling |
 
 ### Scene L: Food lines (NEW)
 

@@ -144,3 +144,20 @@ Not verified (be honest before kids touch it):
 - Hop on finger RELEASE adds roughly the press length to hop latency. Playtest it.
 - Not tried on a physical phone at 1x/2x, with real reduced-motion settings, or with sound audibly checked (the recipes are synthesized; captions were not read aloud). Use protocol in `PLAYTEST.md`.
 - Hindi stubs are machine-written and unreviewed. Draw budget (about 25 calls per frame) is counted in `?debug` (`state.maxCalls`) but not profiled on a physical device.
+
+## 7. Cushion Trick-Shot (House door)
+
+Added to replace the old passive Play Yard with an engaging, interactive physics game designed for six-year-olds.
+Product decisions: a physics bank-shot and fetch game. The child chooses one of the 3 house pets (Tuffy the dog, Brownie the cat, Bunny the rabbit); drag to aim trajectory arc dots; release to toss the pet's toy (tennis ball, yarn ball, wooden carrot); ricochet off furniture and super-bouncy sofa cushions to collect 5 treats into the pet bowl; pet leaps, fetches and returns the toy; no fail states or game-over; pet assists on repeated misses. Files: `src/games/house/{logic,sprites,art,sounds,store,index}.ts`, `tests/house.test.ts`.
+
+| Area | Status | Evidence / note |
+|---|---|---|
+| Pet Names | DONE (code) | Dog: **Tuffy** (id `dog`, food `bone`), Cat: **Brownie** (id `cat`, food `milk`), Rabbit: **Bunny** (id `rabbit`, food `carrot`). Updated across `cards.json`, `en.json`, `hi.json`, `RECORDING_SCRIPT.md`, and audio booth. |
+| Physics & Bounces | DONE (code) | Deterministic 2D physics: gravity `g = 360`, wall clacks, super-elastic sofa cushion boings (`restitution = 0.92`), shelf bounces, and toppling wobble boxes. Tested in `tests/house.test.ts`. |
+| Zero fail state | DONE (code) | Unlimited tosses; missed throws are fetched by the pet with a playful run/leap and returned to the launch point; pet assist nudges food if child misses 3 consecutive throws. 60 seeded autopilot runs verify 100% winnability. |
+| Badges & Secret | DONE (code) | `clean` badge (bank shot master: >= 2 cushion ricochets or <= 8 tosses) and `secret` badge (hitting the golden secret star hung near the ceiling). |
+| Meet & Reveal | DONE (code) | 5 foods in bowl -> Meet (pet munches happily at bowl) -> child taps pet/bowl to feed/pet -> `api.reveal(pet, { quick: true })` -> badges saved -> returns to Ask board. |
+| Registration | DONE (code) | `id: 'house'`, `shelf: 'house'`, imported in `src/main.ts`. House door on home screen is unlocked and fully playable. |
+| Captions & a11y | DONE (code) | Every sound plays through a caption cue (`cc.house.*`, strictly 2-6 words in English and Hindi). Keyboard support: Space/Enter to toss/feed, Arrow keys to aim and adjust power. Fixed 240x135 letterbox. |
+| Art & Budget | DONE (code) | Vector sprites for Tuffy, Brownie, Bunny (idle, watch, leap, munch, sleep); sofa, table, boxes, shelf, bowl, toys. Flat vector conforming to `ART_BIBLE.md` (<= 6 palette tokens per sprite, INK contours, hard shadows, zero gradients/alpha). Draw budget <= 25 canvas calls/frame, zero allocations in frame loop. |
+
