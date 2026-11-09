@@ -117,3 +117,26 @@ Product-owner decision: **the brief is the contract**. Sections 1-4 above are th
 2. Owner sign-off on C4 (criterion 3 wording), and decide C12 (hide level UI) and the "1 badge" limit.
 3. Palette audit of the forage `index.ts` hexes.
 4. Playtest feed discovery: with no glow after run one, a child must find "tap the friend or basket". If 2+ wait, the stop rule applies.
+
+## 6. Farm Dash (Farm door)
+
+Added after the Jungle cut-down; the Jungle trail is unchanged in behaviour (the only edit under `src/games/forage/` is that six drawing helpers in `sprites.ts` are now `export`ed so Farm Dash reuses them). Product decisions: a Chrome-dino-style single-lane runner; the child picks the runner on an Ask board (hen, cow, goat); tap = hop, hold or swipe down = duck; no game-over, timer, lives or fail screen. Files: `src/games/dash/{logic,sprites,art,sounds,index}.ts`, `tests/dash.test.ts`.
+
+| Area | Status | Evidence / note |
+|---|---|---|
+| Body differs per animal | DONE (code) | `BODIES` in `logic.ts`: jump height, air time, rise share (gravity feel), hit-box, run-cycle frame timing. Hen short and quick, cow high and slow with a thump, goat highest and springy. Tested. |
+| Every obstacle clearable by every animal at any speed in range | DONE (code) | Numeric hop-window test (>= 80 ms) for every animal x LOW obstacle x speed 56-92; HIGH obstacles need a duck (stand and hop both hit); spacing = jump time + 400 ms reaction; a calm autopilot (and one 30 ms early/late) runs 70 s for 3 animals x 6 seeds with zero hits, including hop-then-duck and duck-then-hop pairs. Reduced motion slows game time as a whole (x0.75), so winnability does not change. |
+| No fail state | DONE (code) | `Ph` has four phases; a stumble slows the world, drops at most one item, never changes phase (tested; a never-acting runner keeps running). |
+| Only the runner's own food counts | DONE (code) | Own food = `card.food` (hen seeds, cow grass, goat leaves); decoys are the other two animals' foods, never collected. Foods float at hop height (arc over LOW obstacles) and duck height (under HIGH ones); every food sits on a paper plate so it reads on any background. |
+| Basket 5, feed, card, badges | DONE (code), browser-checked | Basket fills at 5 -> Meet (the animal stops and goes happy, the basket sits beside it) -> tap the animal or basket (or Space/Enter) -> `api.reveal(animal,{quick:true})` -> badges (clean = no stumbles, full = no spills, secret = golden star at a rare height) -> Ask. A 6th own food is guaranteed on screen and only counted as left. Run seen end to end in the dev pane: Farm door, pick, hop (Space and a synthetic tap), duck (ArrowDown, swipe, hold), stumble, collect, fill, feed, reveal, back to Ask, badges stored, no console errors. |
+| Registration | DONE | `id: 'dash'`, `shelf: 'farm'`, imported in `main.ts`; House stays "Not open yet!" (tested and clicked); the old farm tap game files are untouched and unimported. Earned animals are Farm shelf cards (tested). |
+| Captions, a11y | DONE (code) | Every sound plays through a caption cue (`cc.dash.*`, 2-6 words), English plus Hindi stubs (`reviewed:false`); no bare `audio.sfx`. 48 px targets (Ask tiles, feed taps), fixed 240x135 letterbox from the shared stage, hints (arrows, food pulse) only on run one of a first-time player. |
+| Art | DONE (code), looks checked at desktop size only | Hen, cow, goat: 3 run frames, jump, duck, stumble, happy; barn/silo/fence/field bands; puddle, hay, fence, branch, crate. Flat vector, <= 6 tokens per sprite (tested with a recording context), one INK contour, no gradients (grep-tested), pre-rendered once. Gzip total 96.0 KB of 400 KB. |
+
+Not verified (be honest before kids touch it):
+- No child has played it. Run length, ramp (60 to 92 px/s over about 55 s), how many own foods appear (about 0.7 per obstacle) and the 180 ms hold-to-duck / 10 px swipe thresholds are tuned by reasoning and simulation, not by a six-year-old. A perfect autopilot fills the basket in about 20 s; real children will take longer.
+- Hop is triggered on finger RELEASE of a quick tap (so a hold can become a duck); that adds roughly the press length to hop latency. Playtest it.
+- Not tried on a phone at 1x/2x, with real reduced-motion settings, or with sound audibly checked (the recipes are synthesized; captions were not read aloud). The dev pane draws at about 1 fps, so timing was driven with `?debug` hooks (`window.__dash`: `go`, `fill`, `feed`, `sim`, `setAuto`, `bring`) rather than real-time play; smoothness of the run cycle is unseen.
+- Grass and leaves are the closest-looking foods (both green); the paper plate and different shapes separate them, but check that a child can tell the cow's grass tuft from the goat's leaf.
+- Hindi stubs are machine-written and unreviewed. Draw budget (about 25 calls per frame) is counted in `?debug` (`state.maxCalls`) but not profiled on a device.
+- Buffalo and horse are Farm shelf cards but not runners yet (the Farm shelf has 5; the Ask board and the shelf strip show only the 3 playable ones). Card levels (C12) and the "1 badge" limit are unchanged.

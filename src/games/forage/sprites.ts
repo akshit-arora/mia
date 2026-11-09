@@ -18,18 +18,18 @@ export const hasVector = (id: string): boolean => VECTOR_ANIMALS.includes(id);
 export type Pose = 0 | 1;
 export const POSES: readonly Pose[] = [0, 1];
 
-const ell = (g: G, x: number, y: number, rx: number, ry: number, rot = 0): void => { g.beginPath(); g.ellipse(x, y, rx, ry, rot, 0, Math.PI * 2); };
+export const ell = (g: G, x: number, y: number, rx: number, ry: number, rot = 0): void => { g.beginPath(); g.ellipse(x, y, rx, ry, rot, 0, Math.PI * 2); };
 /** contour first, fill after: later shapes hide the contour under them, so overlapping limbs stay one flat mass */
-const solid = (g: G, col: string): void => { g.lineWidth = 4; g.lineJoin = 'round'; g.lineCap = 'round'; g.strokeStyle = INK; g.stroke(); g.fillStyle = col; g.fill(); };
-const blob = (g: G, col: string, x: number, y: number, rx: number, ry: number, rot = 0): void => { ell(g, x, y, rx, ry, rot); solid(g, col); };
-const flat = (g: G, col: string, x: number, y: number, rx: number, ry: number, rot = 0): void => { ell(g, x, y, rx, ry, rot); g.fillStyle = col; g.fill(); };
+export const solid = (g: G, col: string): void => { g.lineWidth = 4; g.lineJoin = 'round'; g.lineCap = 'round'; g.strokeStyle = INK; g.stroke(); g.fillStyle = col; g.fill(); };
+export const blob = (g: G, col: string, x: number, y: number, rx: number, ry: number, rot = 0): void => { ell(g, x, y, rx, ry, rot); solid(g, col); };
+export const flat = (g: G, col: string, x: number, y: number, rx: number, ry: number, rot = 0): void => { ell(g, x, y, rx, ry, rot); g.fillStyle = col; g.fill(); };
 /** a thick limb or tail: INK under, colour over */
-const limb = (g: G, col: string, w: number, trace: () => void): void => {
+export const limb = (g: G, col: string, w: number, trace: () => void): void => {
   g.lineCap = 'round'; g.lineJoin = 'round';
   trace(); g.lineWidth = w + 4; g.strokeStyle = INK; g.stroke();
   trace(); g.lineWidth = w; g.strokeStyle = col; g.stroke();
 };
-const eye = (g: G, x: number, y: number, happy: boolean): void => {
+export const eye = (g: G, x: number, y: number, happy: boolean): void => {
   if (happy) { g.beginPath(); g.arc(x, y + 1, 2.4, Math.PI * 1.1, Math.PI * 1.9); g.lineWidth = 2; g.lineCap = 'round'; g.strokeStyle = INK; g.stroke(); return; }
   flat(g, INK, x, y, 2.2, 2.8); flat(g, PAPER, x + 0.8, y - 1, 0.9, 0.9);
 };

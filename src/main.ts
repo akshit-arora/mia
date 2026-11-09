@@ -16,8 +16,9 @@ import { createKit } from './cards/kit';
 import { getStore } from './cards/progress';
 import { isCard } from './cards/data';
 import './games/forage'; // Jungle door: Forage Trail (registers itself)
-// Farm and House doors are "coming soon" in v1 (docs/design/V1_BRIEF.md): their games are not imported, so gameForShelf() is undefined
-// and the home screen shows the closed door. The code stays in src/games/{farm,house} for later.
+import './games/dash'; // Farm door: Farm Dash (registers itself)
+// The House door is "coming soon" (docs/design/V1_BRIEF.md): its game is not imported, so gameForShelf('house') is undefined and the home
+// screen shows the closed door. The old Farm tap game (src/games/farm) and House game stay in the tree, unimported, for later.
 // Card clash (src/games/trump) is out of v1 scope: files kept, not imported, so no registry entry and no home button
 import atlasJson from './gen/atlas.json';
 import atlasUrl from './gen/atlas.png';

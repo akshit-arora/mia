@@ -146,7 +146,7 @@ describe('no-buddy completion (a buddy gate must never be required)', () => {
 });
 
 describe('Card clash is out of v1 (files kept, not reachable)', () => {
-  it('main.ts does not import the clash, farm or house games; home.ts has no clash button', () => {
+  it('main.ts does not import the clash, the old farm tap game or the house game; home.ts has no clash button', () => {
     const main = src('src/main.ts'), home = src('src/app/home.ts');
     for (const g of ['trump', 'farm', 'house']) expect(main, g).not.toMatch(new RegExp(`^import ['"]\\./games/${g}`, 'm'));
     expect(home).not.toMatch(/games\/trump|clashBtn|ui\.clash/);
@@ -156,10 +156,10 @@ describe('Card clash is out of v1 (files kept, not reachable)', () => {
   });
 });
 
-describe('Farm and House are coming soon in v1', () => {
-  it('no game is registered behind the Farm or House door (importing only the logic registers nothing)', () => {
-    expect(gameForShelf('farm')).toBeUndefined();
+describe('House is coming soon in v1 (the Farm door opens Farm Dash: tests/dash.test.ts)', () => {
+  it('no game is registered behind the House door, and importing only the logic registers nothing', () => {
     expect(gameForShelf('house')).toBeUndefined();
-    expect(listGames().some((g) => g.shelf === 'farm' || g.shelf === 'house')).toBe(false);
+    expect(listGames().some((g) => g.shelf === 'house')).toBe(false);
+    expect(gameForShelf('farm')).toBeUndefined(); // the logic tests do not import the Dash game itself
   });
 });
