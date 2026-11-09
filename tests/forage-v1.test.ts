@@ -47,22 +47,16 @@ describe('flat-vector animal sprites (ART_BIBLE)', () => {
 
 describe('fixed 240x135 composition', () => {
   it('is 240 x 135', () => { expect([LOGICAL_W, LOGICAL_H]).toEqual([240, 135]); });
-  it('uses integer scales only (letterboxed), and never exceeds the viewport', () => {
+  it('fills the screen: the scale grows to the limiting side, never exceeds the viewport', () => {
     expect(fitScale(480, 270)).toBe(2);
     expect(fitScale(960, 540)).toBe(4);
-    expect(fitScale(844, 390)).toBe(2); // phone landscape: 480 x 270, letterboxed, crisp
-    expect(fitScale(932, 430)).toBe(3);
-    expect(fitScale(720, 405)).toBe(3);
-    expect(fitScale(719, 404)).toBe(2);
-    for (const [w, h] of [[320, 180], [667, 375], [844, 390], [1024, 768], [1920, 1080]]) {
+    expect(fitScale(844, 390)).toBeCloseTo(2.88, 2); // phone landscape: fills the height (was 2, big blue bars)
+    expect(fitScale(200, 100)).toBeLessThan(1);
+    for (const [w, h] of [[320, 180], [667, 375], [844, 390], [1024, 768], [1920, 1080], [200, 100]]) {
       const s = fitScale(w, h);
-      expect(Number.isInteger(s), `${w}x${h}`).toBe(true);
       expect(LOGICAL_W * s).toBeLessThanOrEqual(w);
       expect(LOGICAL_H * s).toBeLessThanOrEqual(h);
     }
-  });
-  it('only a viewport smaller than the canvas gets a fractional scale (it would not fit at all)', () => {
-    expect(fitScale(200, 100)).toBeLessThan(1);
   });
   it('scenery is flat bands: no gradients in cards/scenes.ts or the forage art', () => {
     for (const f of ['src/cards/scenes.ts', 'src/games/forage/art.ts', 'src/games/forage/index.ts']) expect(src(f), f).not.toMatch(/create(Linear|Radial)Gradient/);

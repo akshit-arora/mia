@@ -3,12 +3,13 @@
 export const LOGICAL_W = 240;
 export const LOGICAL_H = 135;
 /**
- * Integer scale only (V1_BRIEF + ART_BIBLE s3): the 240 x 135 canvas is letterboxed, never stretched to a fraction.
- * The one exception is a viewport smaller than 240 x 135, where the picture would not fit at all.
+ * Fill as much of the screen as the 16:9 canvas allows. The scale is fractional (rounded DOWN to 0.01 so it never overflows):
+ * on a phone in landscape an integer scale left huge blue bars, so the picture now grows until it touches the screen edges
+ * on the limiting side. Only the leftover of a wider-than-16:9 screen stays as letterbox.
  */
 export function fitScale(vw: number, vh: number): number {
   const s = Math.min(Math.max(vw, 1) / LOGICAL_W, Math.max(vh, 1) / LOGICAL_H);
-  return s < 1 ? s : Math.floor(s);
+  return Math.floor(s * 100) / 100;
 }
 
 export type Ease = (t: number) => number;
