@@ -47,15 +47,15 @@ export interface Body {
 
 export const BODIES: Record<AnimalId, Body> = {
   // hen: quick small hops, short jump, quick little legs
-  hen: { id: 'hen', jump: { height: 34, durMs: 560, rise: 0.5 }, stand: 22, duck: 12, width: 8, run: { frames: 3, frameMs: 70 }, stumbleMs: 650 },
+  hen: { id: 'hen', jump: { height: 34, durMs: 800, rise: 0.5 }, stand: 22, duck: 12, width: 6, run: { frames: 3, frameMs: 70 }, stumbleMs: 650 },
   // cow: heavy gallop, big slow jump (slow lift, thump down)
-  cow: { id: 'cow', jump: { height: 38, durMs: 760, rise: 0.6 }, stand: 30, duck: 16, width: 16, run: { frames: 3, frameMs: 130 }, stumbleMs: 800 },
+  cow: { id: 'cow', jump: { height: 38, durMs: 1000, rise: 0.6 }, stand: 30, duck: 16, width: 12, run: { frames: 3, frameMs: 130 }, stumbleMs: 800 },
   // goat: springy, the highest jump (fast launch, floaty fall)
-  goat: { id: 'goat', jump: { height: 46, durMs: 600, rise: 0.35 }, stand: 27, duck: 15, width: 12, run: { frames: 3, frameMs: 85 }, stumbleMs: 650 },
+  goat: { id: 'goat', jump: { height: 46, durMs: 850, rise: 0.35 }, stand: 27, duck: 15, width: 10, run: { frames: 3, frameMs: 85 }, stumbleMs: 650 },
   // buffalo: massive muscular build, heavy slow jump with low launch and powerful thump
-  buffalo: { id: 'buffalo', jump: { height: 38, durMs: 760, rise: 0.58 }, stand: 30, duck: 16, width: 16, run: { frames: 3, frameMs: 130 }, stumbleMs: 800 },
+  buffalo: { id: 'buffalo', jump: { height: 38, durMs: 1000, rise: 0.58 }, stand: 30, duck: 16, width: 12, run: { frames: 3, frameMs: 130 }, stumbleMs: 800 },
   // horse: athletic runner, tall frame, elegant high arc
-  horse: { id: 'horse', jump: { height: 44, durMs: 660, rise: 0.45 }, stand: 31, duck: 16, width: 14, run: { frames: 3, frameMs: 80 }, stumbleMs: 700 },
+  horse: { id: 'horse', jump: { height: 44, durMs: 900, rise: 0.45 }, stand: 31, duck: 16, width: 11, run: { frames: 3, frameMs: 80 }, stumbleMs: 700 },
 };
 export const bodyOf = (id: string): Body => BODIES[id as AnimalId];
 
@@ -128,9 +128,9 @@ export interface ObstacleDef { id: string; kind: ObstacleKind; w: number; hitW: 
 /** `h` is the height of a LOW obstacle; a HIGH obstacle hangs with its bottom at HIGH_CLEARANCE. `w` is the picture, `hitW` the hit-box (narrower: forgiving). */
 export const OBSTACLES: Record<ObstacleKind, readonly ObstacleDef[]> = {
   low: [
-    { id: 'puddle', kind: 'low', w: 24, hitW: 14, h: 4 },
-    { id: 'hay', kind: 'low', w: 20, hitW: 10, h: 10 },
-    { id: 'fence', kind: 'low', w: 24, hitW: 10, h: 13 },
+    { id: 'puddle', kind: 'low', w: 24, hitW: 8, h: 4 },
+    { id: 'hay', kind: 'low', w: 20, hitW: 8, h: 10 },
+    { id: 'fence', kind: 'low', w: 24, hitW: 8, h: 13 },
   ],
   high: [
     { id: 'branch', kind: 'high', w: 30, hitW: 12, h: 0 },
@@ -139,8 +139,8 @@ export const OBSTACLES: Record<ObstacleKind, readonly ObstacleDef[]> = {
 };
 
 /** Speed range the game can run at (px per second of game time). Reduced motion slows game TIME, not these numbers. */
-export const SPEED_MIN = 56, SPEED_MAX = 92;
-const SPEED_START = 60, SPEED_RAMP = 0.4; // px/s gained per second: gentle ramp over ~80 s
+export const SPEED_MIN = 46, SPEED_MAX = 76;
+const SPEED_START = 50, SPEED_RAMP = 0.3; // px/s gained per second: gentle ramp over ~80 s
 export const speedAt = (tMs: number): number => Math.min(SPEED_MAX, SPEED_START + (SPEED_RAMP * tMs) / 1000);
 
 /** Does a runner (feet offset, box height, half-width) at x = RUNNER_X hit an obstacle at ox? */
@@ -183,7 +183,7 @@ export interface Segment {
 }
 
 /** Chance each floating food is the animal's own. A drought of own food is broken after `DROUGHT` segments. */
-export const OWN_P = 0.18, DROUGHT = 4, STAR_P = 0.45;
+export const OWN_P = 0.75, DROUGHT = 2, STAR_P = 0.45;
 
 export class Course {
   n = 0; // segments produced
@@ -216,13 +216,13 @@ export class Course {
 
     const foods: FoodSpec[] = [];
     const mkFood = (dx: number, slot: 'hop' | 'duck'): void => {
-      const own = r() < OWN_P || this.sinceOwn >= DROUGHT * 2;
+      const own = r() < OWN_P || this.sinceOwn >= DROUGHT;
       foods.push({ dx, slot, own, decoy: r() < 0.5 ? 0 : 1 });
       if (own) this.sinceOwn = 0;
     };
-    if (kind === 'low') { mkFood(-10, 'hop'); mkFood(10, 'hop'); } // an arc over the obstacle: reached by hopping it
-    else if (kind === 'high') { mkFood(-8, 'duck'); mkFood(8, 'duck'); } // low under the hanging obstacle: reached by ducking it
-    if (kind !== 'meadow' && r() < 0.35) mkFood(-Math.round(gapPx / 2), r() < 0.5 ? 'hop' : 'duck'); // one free-floating food in the gap
+    if (kind === 'low') mkFood(0, 'hop'); // ONE bubble over the obstacle: reached by hopping it
+    else if (kind === 'high') mkFood(0, 'duck'); // ONE bubble under the hanging obstacle: reached by ducking it
+    // No food floats in the gaps: a bubble only ever sits where the move that reaches it is the move the obstacle needs anyway.
     this.sinceOwn++;
     this.n++;
     return { kind, variant, gapPx, foods };
@@ -248,6 +248,7 @@ export class DashWorld {
   t = 0; // ms of run time
   speed = SPEED_START;
   distance = 0;
+  pendingHop = -1; // ms until a buffered hop fires (tap assist), -1 none
   settled = false; // basket full: the world eases, obstacles no longer hurt
   private settleT = 0;
   private cursorX = 70; // x of the last placed segment
@@ -257,6 +258,26 @@ export class DashWorld {
     this.runner = new Runner(body);
     this.course = new Course(rng, body);
     for (let i = 0; i < pool; i++) this.items.push(newItem());
+  }
+
+  /**
+   * A tap. If a LOW obstacle is coming, the hop is held back to the middle of its clearing window, so an early tap still works.
+   * Returns true when a hop is made or queued.
+   */
+  requestHop(): boolean {
+    const r = this.runner;
+    if (!r.grounded || r.stumbling || this.pendingHop >= 0) return false;
+    let near: Item | null = null;
+    for (const it of this.items) if (it.on && !it.done && (it.kind === K.Low || it.kind === K.High) && it.x > RUNNER_X - 6 && (!near || it.x < near.x)) near = it;
+    if (near && near.kind === K.Low) {
+      const sp = Math.max(1, speedAt(this.t)), toMs = ((near.x - RUNNER_X) / sp) * 1000;
+      const win = hopWindow(this.body, OBSTACLES.low[near.variant], sp);
+      if (win) {
+        const wait = toMs - (win[0] + win[1]) / 2;
+        if (wait > 0 && wait < 900) { this.pendingHop = wait; return true; }
+      }
+    }
+    return r.hop();
   }
 
   /** The basket is full: slow the world, stop the obstacles. */
@@ -284,9 +305,10 @@ export class DashWorld {
   tick(dt: number): void {
     const ev = this.events; ev.length = 0;
     this.runner.tick(dt);
+    if (this.pendingHop >= 0) { this.pendingHop -= dt; if (this.pendingHop <= 0) { this.pendingHop = -1; this.runner.hop(); } }
     this.t += dt;
     let k = this.runner.stumbling ? 0.45 : 1; // a stumble slows the world: time to laugh and recover
-    if (this.settled) { this.settleT += dt; k *= Math.max(0.3, 1 - this.settleT / 700); }
+    if (this.settled) { this.settleT += dt; k *= Math.max(0, 1 - this.settleT / 900); } // the world comes to a full stop
     this.speed = speedAt(this.t) * k;
     const mv = (this.speed * dt) / 1000;
     this.distance += mv; this.cursorX -= mv;
@@ -311,7 +333,7 @@ export class DashWorld {
         if (!this.settled && !r.stumbling && hits(o, it.x, r.offset, r.height, b.width)) { it.done = true; r.hurt(); ev.push(EV.Hit); }
       } else if (it.kind === K.Food) {
         if (this.settled) {
-          if (it.own && it.x < RUNNER_X - 14) { it.done = true; ev.push(EV.Left); } // passed a full basket: counted, never punished
+          if (it.own && (it.x < RUNNER_X - 14 || this.settleT >= 900)) { it.done = true; ev.push(EV.Left); } // passed a full basket: counted, never punished
         } else if (it.own && Math.abs(it.x - RUNNER_X) <= FOOD_R + b.width / 2 + 2) {
           const y = it.slot === 0 ? HOP_Y : DUCK_Y, lo = r.offset, hi = r.offset + r.height;
           if (hi >= y - FOOD_R && lo <= y + FOOD_R) { it.done = true; it.on = false; ev.push(EV.Own); }

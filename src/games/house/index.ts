@@ -160,8 +160,7 @@ function startHouse(container: HTMLElement, api: GameApi): () => void {
     round.aimPower = Math.max(190, Math.min(340, dist * 2.6));
   };
 
-  stage.onDown = (p) => {
-    const px = p.x, py = p.y;
+  const onDownAt = (px: number, py: number): void => {
     if (revealing || dead) return;
 
     if (round.phase === Ph.Ask) {
@@ -190,8 +189,7 @@ function startHouse(container: HTMLElement, api: GameApi): () => void {
     }
   };
 
-  stage.onMove = (p) => {
-    const px = p.x, py = p.y;
+  const onMoveAt = (px: number, py: number): void => {
     if (revealing || dead) return;
     if (round.phase === Ph.Ask) {
       hotPet = null;
@@ -210,7 +208,7 @@ function startHouse(container: HTMLElement, api: GameApi): () => void {
     }
   };
 
-  stage.onUp = () => {
+  const onUpAt = (): void => {
     if (revealing || dead) return;
     if (round.phase === Ph.Aim && pointerDown) {
       pointerDown = false;
@@ -222,8 +220,8 @@ function startHouse(container: HTMLElement, api: GameApi): () => void {
     }
   };
 
-  stage.onKey = (e) => {
-    if (revealing || dead) return;
+  const onKey = (e: KeyboardEvent): void => {
+    if (revealing || dead || api.isRevealing() || document.querySelector('.parent')) return;
     if (round.phase === Ph.Ask) {
       if (e.key === '1' || e.key === 'ArrowLeft') startPet('dog');
       else if (e.key === '2' || e.key === 'ArrowUp') startPet('cat');
@@ -254,6 +252,28 @@ function startHouse(container: HTMLElement, api: GameApi): () => void {
       finishRound();
     }
   };
+
+  // The game-root overlay sits on top of the canvas, so pointer events must be listened for on `container` (the canvas never sees them).
+  container.style.touchAction = 'none';
+  const logical = (e: PointerEvent): { x: number; y: number } => {
+    const rc = canvas.getBoundingClientRect();
+    return { x: ((e.clientX - rc.left) / rc.width) * stage.W, y: ((e.clientY - rc.top) / rc.height) * stage.H };
+  };
+  const onPtrDown = (e: PointerEvent): void => {
+    if (e.target !== container || api.isRevealing()) return;
+    try { container.setPointerCapture(e.pointerId); } catch { /* ignore */ }
+    const p = logical(e); onDownAt(p.x, p.y);
+  };
+  const onPtrMove = (e: PointerEvent): void => {
+    if (e.target !== container || api.isRevealing()) return;
+    const p = logical(e); onMoveAt(p.x, p.y);
+  };
+  const onPtrUp = (): void => onUpAt();
+  container.addEventListener('pointerdown', onPtrDown);
+  container.addEventListener('pointermove', onPtrMove);
+  container.addEventListener('pointerup', onPtrUp);
+  container.addEventListener('pointercancel', onPtrUp);
+  window.addEventListener('keydown', onKey);
 
   const finishRound = (): void => {
     if (revealing) return;
@@ -409,10 +429,17 @@ function startHouse(container: HTMLElement, api: GameApi): () => void {
       ctx.fillStyle = PCOL[p.c];
       ctx.fillRect(Math.round(p.x), Math.round(p.y), 2.5, 2.5);
     }
+    stage.invalidate(); // the simulation runs every frame, not at the idle 4 fps
   };
 
   return () => {
     dead = true;
+    container.removeEventListener('pointerdown', onPtrDown);
+    container.removeEventListener('pointermove', onPtrMove);
+    container.removeEventListener('pointerup', onPtrUp);
+    container.removeEventListener('pointercancel', onPtrUp);
+    window.removeEventListener('keydown', onKey);
+    setCaptionStyle({});
     canvas.setAttribute('aria-label', oldLabel);
   };
 }

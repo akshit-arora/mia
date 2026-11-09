@@ -54,11 +54,11 @@ describe('the five farm animals have their own bodies', () => {
 });
 
 describe('every obstacle is clearable by every animal at every speed in range', () => {
-  it('LOW obstacles: a comfortable hop window (>= 80 ms) exists for every animal, obstacle and speed', () => {
+  it('LOW obstacles: a comfortable hop window (>= 250 ms) exists for every animal, obstacle and speed', () => {
     for (const a of DASH_ANIMALS) for (const o of ALL_LOW) for (const sp of SPEEDS) {
       const w = hopWindow(BODIES[a], o, sp);
       expect(w, `${a} ${o.id} @${sp}`).not.toBeNull();
-      expect(w![1] - w![0], `${a} ${o.id} @${sp}`).toBeGreaterThanOrEqual(80);
+      expect(w![1] - w![0], `${a} ${o.id} @${sp}`).toBeGreaterThanOrEqual(250);
     }
   });
   it('a LOW obstacle is never taller than 40% of the lowest jump, and the lowest jump still tops the hop food', () => {
@@ -189,7 +189,7 @@ describe('only the runner animal\'s own food counts', () => {
         own += o; decoy += s.foods.length - o;
         dry = o ? 0 : dry + 1; maxDry = Math.max(maxDry, dry);
       }
-      expect(own).toBeGreaterThan(30); expect(decoy).toBeGreaterThan(30);
+      expect(own).toBeGreaterThan(60); expect(decoy).toBeGreaterThan(12);
       expect(maxDry).toBeLessThanOrEqual(8);
     }
   });

@@ -57,6 +57,7 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
   // ------------------------------------------------------------------ art, built once
   const icons = FOODS.map((f) => kit.icon('food.' + f, 32));
   const sparkIcon = kit.icon('ui.sparkle', 24);
+  const handImg = kit.icon('ui.hand', 32);
   const flower = flowerSprite();
   const [thorn, bee] = hazardSprites();
   const secret = secretSprite();
@@ -316,7 +317,8 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
       }
       enterT += dt;
       if (!meetHello && enterT >= 650) { meetHello = true; cue(MEET, CAPTION.meet); }
-      speedK = Math.max(0.5, speedK - dt / 600); // the world eases, the basket does not
+      speedK = Math.max(0, speedK - dt / 700); // the world eases to a full stop, the basket does not
+      if (speedK <= 0.01) for (let i = 0; i < items.length; i++) { const it = items[i]; if (it.on && it.sub === 0) { it.sub = 1; round.leave(); } } // food left on the trail: counted, never punished
       if (round.fed) feedT += dt;
     }
     if (round.tick(dt) && round.phase === Ph.Reveal && !revealing) {
@@ -396,10 +398,6 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
       g.drawImage(bush, W - 44, LANE_Y[1] - 30); n++;
       const fx = Math.round(W - 90 + (1 - k) * 60), fy = LANE_Y[1] - 38 + (round.fed ? -Math.round(Math.abs(Math.sin(feedT / 90)) * 4) : 0);
       g.drawImage(friendImgs[round.fed ? 1 : 0], fx, fy); n++;
-      if (!round.fed && k >= 1 && !stage.reduced && firstTimer && rounds === 1) { // run one only: pulse the friend. After that nothing glows (brief criteria 1 and 8)
-        const o = Math.round(Math.abs(Math.sin(now / 280)) * 3);
-        g.drawImage(icons[FOODS.indexOf(round.food)], fx + 8, fy - 24 - o, 24, 24); n++;
-      }
     }
     // basket (with a wobble when bumped) and the buddy riding on it
     const by = Math.round(basketY) + (hop > 0 && !stage.reduced ? -3 : 0);
@@ -407,6 +405,10 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
     const happy = ph === Ph.Meet || ph === Ph.Reveal;
     g.drawImage(basket[happy ? 2 : blinkT < 0 ? 1 : 0], BX - 20 + wob, topFor(by, 34)); n++;
     if (round.buddy && buddyImgs.length) { g.drawImage(buddyImgs[happy ? 1 : 0], BX - 12 + wob, topFor(by, 34) - 17); n++; }
+    if (ph === Ph.Meet && !round.fed && enterT >= 700) { // a bobbing hand over the basket: tap it (or the friend) to feed
+      const o = stage.reduced ? 0 : Math.round(Math.abs(Math.sin(now / 280)) * 4);
+      g.drawImage(handImg, BX - 14, by - 52 + o, 28, 28); n++;
+    }
     if (ph === Ph.Meet && round.fed) { // the food hops from the basket to the friend
       const k = Math.min(1, feedT / 500), s = 24;
       const fx = BX + (W - 90 + 8 - BX) * k, fy = by - 20 - Math.sin(k * Math.PI) * 24;

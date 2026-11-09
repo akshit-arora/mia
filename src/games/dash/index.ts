@@ -71,6 +71,7 @@ function startDash(container: HTMLElement, api: GameApi): () => void {
     tiles.set(id, tile(runnerImage(id, 0, 34), TILE));
     tiles.set(id + '!', tile(runnerImage(id, 0, 34), TILE, true));
   }
+  const handImg = kit.icon('ui.hand', 32);
   const arrowUp = hintArrow(true), arrowDown = hintArrow(false);
   let strip = shelfStrip(kit, [...DASH_ANIMALS], api.levelOf);
 
@@ -134,7 +135,7 @@ function startDash(container: HTMLElement, api: GameApi): () => void {
   // ------------------------------------------------------------------ actions
   const doHop = (): void => {
     if (round.phase === Ph.Ask || round.phase === Ph.Reveal) return;
-    if (world.runner.hop()) { didHop = true; cue(HOP[friend], CAPTION.hop, 700); }
+    if (world.requestHop()) { didHop = true; cue(HOP[friend], CAPTION.hop, 700); }
   };
   const duckOn = (): void => {
     if (round.phase !== Ph.Trail) return;
@@ -266,9 +267,9 @@ function startDash(container: HTMLElement, api: GameApi): () => void {
       if (ph === Ph.Meet && round.fed) {
         const f = Math.min(1, feedT / 500);
         g.drawImage(foodImg, Math.round(bx + (RUNNER_X + 12 - bx) * f - 9), Math.round(GROUND_Y - 30 - Math.sin(f * Math.PI) * 22)); n++;
-      } else if (!round.fed && k >= 1 && !stage.reduced && firstTimer && rounds === 1) { // run one only: pulse the food over the basket. After that nothing glows
-        const o = Math.round(Math.abs(Math.sin(now / 280)) * 3);
-        g.drawImage(foodImg, bx - 9, GROUND_Y - 58 - o); n++;
+      } else if (!round.fed && k >= 1) { // a bobbing hand over the basket: tap it (or the animal) to feed
+        const o = stage.reduced ? 0 : Math.round(Math.abs(Math.sin(now / 280)) * 4);
+        g.drawImage(handImg, bx - 14, GROUND_Y - 68 + o, 28, 28); n++;
       }
     }
     if (hintOn && ph === Ph.Trail && !stage.reduced) { // run one only, until the child has tried both moves: an arrow when the matching obstacle is near
