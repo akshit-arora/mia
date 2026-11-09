@@ -6,7 +6,7 @@
 import { TOK, blob, eye, flat, limb } from '../forage/sprites';
 
 type G = CanvasRenderingContext2D;
-const { INK, INK_SOFT, PAPER, SUN, BARK_D, SAND, CORAL, DIRT } = TOK;
+const { INK, INK_SOFT, PAPER, SUN, BARK, BARK_D, SAND, CORAL, DIRT } = TOK;
 
 /** [dx, lift] of a foot relative to its hip. */
 type Foot = readonly [number, number];
@@ -97,7 +97,39 @@ function hen(g: G, pose: number): void {
   if (p.stars) stars(g, 44 + hx, 12 + hy + dy);
 }
 
-const DRAW: Record<string, (g: G, pose: number) => void> = { hen, cow, goat };
+function buffalo(g: G, pose: number): void {
+  const p = POSE_DEFS[pose], dy = p.dy, [hx, hy] = p.head, hipY = 46 + dy * 0.5;
+  leg(g, INK_SOFT, INK, 5.5, 14, hipY, p.legs[0]); leg(g, INK_SOFT, INK, 5.5, 38, hipY, p.legs[2]);
+  limb(g, INK_SOFT, 2.2, () => { g.beginPath(); g.moveTo(9, 34 + dy); if (p.tailUp) g.quadraticCurveTo(2, 25 + dy, 6, 17 + dy); else g.quadraticCurveTo(2, 41 + dy, 5, 49 + dy); });
+  blob(g, INK_SOFT, 29, 39 + dy, 22, 14 * p.sq);
+  blob(g, INK_SOFT, 35, 33 + dy * 0.9, 9, 8 * p.sq);
+  limb(g, SAND, 3.2, () => { g.beginPath(); g.moveTo(46 + hx, 21 + hy + dy); g.quadraticCurveTo(40 + hx, 10 + hy + dy, 32 + hx, 14 + hy + dy); });
+  blob(g, INK_SOFT, 42 + hx, 24 + hy + dy, 5, 3, -0.4);
+  blob(g, INK_SOFT, 49 + hx, 28 + hy + dy, 10.5, 9.5);
+  blob(g, DIRT, 56 + hx, 32 + hy + dy, 6.2, 5.2);
+  flat(g, INK, 58 + hx, 31.5 + hy + dy, 1.2, 1.4); flat(g, INK, 55 + hx, 31.5 + hy + dy, 1.2, 1.4);
+  eyes(g, p, 48 + hx, 24 + hy + dy);
+  leg(g, INK_SOFT, INK, 5.5, 20, hipY, p.legs[1]); leg(g, INK_SOFT, INK, 5.5, 44, hipY, p.legs[3]);
+  if (p.stars) stars(g, 48 + hx, 10 + hy + dy);
+}
+
+function horse(g: G, pose: number): void {
+  const p = POSE_DEFS[pose], dy = p.dy, [hx, hy] = p.head, hipY = 45 + dy * 0.5;
+  leg(g, BARK, BARK_D, 4.2, 15, hipY, p.legs[0]); leg(g, BARK, BARK_D, 4.2, 37, hipY, p.legs[2]);
+  limb(g, BARK_D, 3, () => { g.beginPath(); g.moveTo(8, 33 + dy); if (p.tailUp) g.quadraticCurveTo(0, 24 + dy, 3, 16 + dy); else g.quadraticCurveTo(1, 42 + dy, 4, 50 + dy); });
+  blob(g, BARK, 28, 38 + dy, 19, 12 * p.sq);
+  blob(g, BARK, 40 + hx * 0.7, 30 + dy * 0.9 + hy * 0.5, 7, 10, 0.25);
+  blob(g, BARK_D, 36 + hx * 0.6, 23 + dy * 0.9 + hy * 0.5, 4, 7.5, -0.2);
+  blob(g, BARK, 43 + hx, 15 + hy + dy, 3, 5, -0.2);
+  blob(g, BARK, 48 + hx, 23 + hy + dy, 8.5, 7.5, 0.2);
+  blob(g, SAND, 55 + hx, 28 + hy + dy, 5, 4.2, 0.2);
+  flat(g, INK, 57 + hx, 27.5 + hy + dy, 1.1, 1.3);
+  eyes(g, p, 47 + hx, 21 + hy + dy);
+  leg(g, BARK, BARK_D, 4.2, 21, hipY, p.legs[1]); leg(g, BARK, BARK_D, 4.2, 43, hipY, p.legs[3]);
+  if (p.stars) stars(g, 47 + hx, 8 + hy + dy);
+}
+
+const DRAW: Record<string, (g: G, pose: number) => void> = { hen, cow, goat, buffalo, horse };
 export const hasDashSprite = (id: string): boolean => id in DRAW;
 
 /** Draw one runner pose on the 64 x 64 grid. The caller sets the scale. */

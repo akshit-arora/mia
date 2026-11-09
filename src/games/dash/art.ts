@@ -163,11 +163,22 @@ export function hintArrow(up: boolean): Cv {
   return c;
 }
 
-/** A floating food on a round paper plate with one INK ring, so every food reads on any background (own foods and decoys alike). */
-export function foodPlate(icon: Cv, size: number): Cv {
+/** A floating food on a round paper plate with distinct accent rims per food so grass, leaves and seeds read unmistakably on any background. */
+export function foodPlate(icon: Cv, size: number, food?: string): Cv {
   const [c, g] = mk(size, size), r = size / 2;
-  disc(g, r, r, r, P.INK); disc(g, r, r, r - 1.5, P.PAPER);
-  g.imageSmoothingEnabled = true; const s = size - 5; g.drawImage(icon, (size - s) / 2, (size - s) / 2, s, s);
+  disc(g, r, r, r, P.INK);
+  disc(g, r, r, r - 1.5, P.PAPER);
+  if (food === 'grass') {
+    disc(g, r, r, r - 1.5, P.LEAF_L);
+    disc(g, r, r, r - 3, P.PAPER);
+  } else if (food === 'leaves') {
+    disc(g, r, r, r - 1.5, P.LEAF_D);
+    disc(g, r, r, r - 3, P.PAPER);
+  } else if (food === 'seeds') {
+    disc(g, r, r, r - 1.5, P.SUN);
+    disc(g, r, r, r - 3, P.PAPER);
+  }
+  g.imageSmoothingEnabled = true; const s = size - 6; g.drawImage(icon, (size - s) / 2, (size - s) / 2, s, s);
   return c;
 }
 

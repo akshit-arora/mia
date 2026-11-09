@@ -25,9 +25,9 @@ export const FOOD_R = 6; // food collect radius
 export const FOOD_PX = 18; // food icon size on screen
 
 // ---------------------------------------------------------------- animals and their bodies
-export type AnimalId = 'hen' | 'cow' | 'goat';
-/** The three farm animals on the Ask board. Every one is a Farm shelf card (tested). */
-export const DASH_ANIMALS: readonly AnimalId[] = ['hen', 'cow', 'goat'];
+export type AnimalId = 'hen' | 'cow' | 'goat' | 'buffalo' | 'horse';
+/** The five farm animals on the Ask board. Every one is a Farm shelf card (tested). */
+export const DASH_ANIMALS: readonly AnimalId[] = ['hen', 'cow', 'goat', 'buffalo', 'horse'];
 
 /**
  * How a hop feels. `rise` is the share of the air time spent going up: a LOW rise value is a springy launch with a floaty fall (goat),
@@ -52,6 +52,10 @@ export const BODIES: Record<AnimalId, Body> = {
   cow: { id: 'cow', jump: { height: 38, durMs: 760, rise: 0.6 }, stand: 30, duck: 16, width: 16, run: { frames: 3, frameMs: 130 }, stumbleMs: 800 },
   // goat: springy, the highest jump (fast launch, floaty fall)
   goat: { id: 'goat', jump: { height: 46, durMs: 600, rise: 0.35 }, stand: 27, duck: 15, width: 12, run: { frames: 3, frameMs: 85 }, stumbleMs: 650 },
+  // buffalo: massive muscular build, heavy slow jump with low launch and powerful thump
+  buffalo: { id: 'buffalo', jump: { height: 38, durMs: 760, rise: 0.58 }, stand: 30, duck: 16, width: 16, run: { frames: 3, frameMs: 130 }, stumbleMs: 800 },
+  // horse: athletic runner, tall frame, elegant high arc
+  horse: { id: 'horse', jump: { height: 44, durMs: 660, rise: 0.45 }, stand: 31, duck: 16, width: 14, run: { frames: 3, frameMs: 80 }, stumbleMs: 700 },
 };
 export const bodyOf = (id: string): Body => BODIES[id as AnimalId];
 
@@ -136,7 +140,7 @@ export const OBSTACLES: Record<ObstacleKind, readonly ObstacleDef[]> = {
 
 /** Speed range the game can run at (px per second of game time). Reduced motion slows game TIME, not these numbers. */
 export const SPEED_MIN = 56, SPEED_MAX = 92;
-const SPEED_START = 60, SPEED_RAMP = 0.6; // px/s gained per second: a gentle ramp, never a wall
+const SPEED_START = 60, SPEED_RAMP = 0.4; // px/s gained per second: gentle ramp over ~80 s
 export const speedAt = (tMs: number): number => Math.min(SPEED_MAX, SPEED_START + (SPEED_RAMP * tMs) / 1000);
 
 /** Does a runner (feet offset, box height, half-width) at x = RUNNER_X hit an obstacle at ox? */
@@ -179,7 +183,7 @@ export interface Segment {
 }
 
 /** Chance each floating food is the animal's own. A drought of own food is broken after `DROUGHT` segments. */
-export const OWN_P = 0.28, DROUGHT = 3, STAR_P = 0.45;
+export const OWN_P = 0.18, DROUGHT = 4, STAR_P = 0.45;
 
 export class Course {
   n = 0; // segments produced
@@ -206,7 +210,7 @@ export class Course {
     }
     if (kind !== 'meadow') { if (kind === this.runKind) this.runLen++; else { this.runKind = kind; this.runLen = 1; } }
     const half = kind === 'meadow' ? 8 : OBSTACLES[kind][variant].w / 2;
-    const gapMs = minGapMs(this.body) + 250 + r() * 550;
+    const gapMs = minGapMs(this.body) + 350 + r() * 550;
     const gapPx = this.n === 0 ? 120 : Math.round((speed * gapMs) / 1000 + this.prevHalf + half);
     this.prevHalf = half;
 

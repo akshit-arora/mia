@@ -24,7 +24,7 @@ import { CAPTION, DUCK, FEED, HOP, MEET, PICKUP, STAR, START, STUMBLE } from './
 const MAX_CALLS = 25;
 const PART_POOL = 14;
 const SHELF_X = 36, SHELF_Y = 2;
-const TILE = 52;
+const TILE = 42;
 const HOLD_MS = 180; // a press this long becomes a duck
 const SWIPE_PX = 10; // a swipe down this far ducks at once
 const BASKET_X = RUNNER_X + 44; // where the basket sits beside the animal at Meet
@@ -60,7 +60,7 @@ function startDash(container: HTMLElement, api: GameApi): () => void {
   const shadows = new Map<string, Cv>(), poses = new Map<string, Cv[]>(), pips = new Map<string, Cv[]>(), tiles = new Map<string, Cv>();
   const foodIcon = new Map<string, Cv>();
   const rawIcon = new Map<string, Cv>();
-  for (const f of new Set(DASH_ANIMALS.map(foodOf))) { rawIcon.set(f, kit.icon('food.' + f, 32)); foodIcon.set(f, foodPlate(rawIcon.get(f)!, FOOD_PX)); }
+  for (const f of new Set(DASH_ANIMALS.map(foodOf))) { rawIcon.set(f, kit.icon('food.' + f, 32)); foodIcon.set(f, foodPlate(rawIcon.get(f)!, FOOD_PX, f)); }
   for (const id of DASH_ANIMALS) {
     const imgs: Cv[] = [];
     for (let p = 0; p < POSE_TOTAL; p++) imgs.push(runnerImage(id, p));
@@ -68,8 +68,8 @@ function startDash(container: HTMLElement, api: GameApi): () => void {
     shadows.set(id, shadowImage(Math.max(18, bodyOf(id).width * 2 + 12)));
     const ic = rawIcon.get(foodOf(id))!;
     pips.set(id, [0, 1, 2, 3, 4, 5].map((n) => basketPips(ic, n)));
-    tiles.set(id, tile(runnerImage(id, 0, 40), TILE));
-    tiles.set(id + '!', tile(runnerImage(id, 0, 40), TILE, true));
+    tiles.set(id, tile(runnerImage(id, 0, 34), TILE));
+    tiles.set(id + '!', tile(runnerImage(id, 0, 34), TILE, true));
   }
   const arrowUp = hintArrow(true), arrowDown = hintArrow(false);
   let strip = shelfStrip(kit, [...DASH_ANIMALS], api.levelOf);
@@ -104,7 +104,7 @@ function startDash(container: HTMLElement, api: GameApi): () => void {
   };
 
   // ------------------------------------------------------------------ Ask board
-  const tileX = (i: number): number => Math.round(stage.W / 2 + (i - 1) * (TILE + 14));
+  const tileX = (i: number): number => Math.round(stage.W / 2 + (i - 2) * (TILE + 4));
   const TILE_Y = 76;
   const openAsk = (): void => {
     strip = shelfStrip(kit, [...DASH_ANIMALS], api.levelOf);
@@ -354,7 +354,7 @@ function startDash(container: HTMLElement, api: GameApi): () => void {
   const onKey = (e: KeyboardEvent): void => {
     if (api.isRevealing() || document.querySelector('.parent')) return;
     if (round.phase === Ph.Ask) {
-      if (e.key === '1' || e.key === '2' || e.key === '3') { pickTile(+e.key - 1); e.preventDefault(); }
+      if (e.key >= '1' && e.key <= '5') { pickTile(+e.key - 1); e.preventDefault(); }
       return;
     }
     if (round.phase === Ph.Meet && !round.fed && (e.key === ' ' || e.key === 'Enter')) { doFeed(); e.preventDefault(); return; }

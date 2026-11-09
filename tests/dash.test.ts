@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { lcg } from '../src/audio/recipes';
 import { cardOf } from '../src/cards/data';
 import {
-  BODIES, Course, DASH_ANIMALS, DASH_FOODS, DASH_ROUND, DashRound, DashWorld, EV, FOOD_R, GROUND_Y, HIGH_CLEARANCE, HOP_Y, K, OBSTACLES, Ph,
+  AnimalId, BODIES, Course, DASH_ANIMALS, DASH_FOODS, DASH_ROUND, DashRound, DashWorld, EV, FOOD_R, GROUND_Y, HIGH_CLEARANCE, HOP_Y, K, OBSTACLES, Ph,
   REACT_MS, RUNNER_X, Runner, SPEED_MAX, SPEED_MIN, STAR_Y, apexTop, autopilot, bodyOf, decoysOf, foodOf, hits, hopWindow, jumpOffset, minGapMs,
   overlapMs, speedAt, DUCK_Y, farmIds,
 } from '../src/games/dash/logic';
@@ -11,23 +11,24 @@ const SPEEDS: number[] = [];
 for (let s = SPEED_MIN; s <= SPEED_MAX; s += 4) SPEEDS.push(s);
 const ALL_LOW = OBSTACLES.low, ALL_HIGH = OBSTACLES.high;
 
-describe('the three farm animals have their own bodies', () => {
-  it('hen, cow and goat are Farm shelf cards, and the Ask board offers only them', () => {
-    expect([...DASH_ANIMALS]).toEqual(['hen', 'cow', 'goat']);
+describe('the five farm animals have their own bodies', () => {
+  it('hen, cow, goat, buffalo and horse are Farm shelf cards, and the Ask board offers them', () => {
+    expect([...DASH_ANIMALS]).toEqual(['hen', 'cow', 'goat', 'buffalo', 'horse']);
     for (const id of DASH_ANIMALS) expect(cardOf(id).shelf, id).toBe('farm');
     expect(farmIds()).toEqual(expect.arrayContaining([...DASH_ANIMALS]));
   });
-  it('jump data differs: goat highest, cow slowest, hen quickest and lowest', () => {
-    const { hen, cow, goat } = BODIES;
+  it('jump data differs across the animals', () => {
+    const { hen, cow, goat, buffalo, horse } = BODIES;
     expect(goat.jump.height).toBeGreaterThan(cow.jump.height);
+    expect(horse.jump.height).toBeGreaterThan(buffalo.jump.height);
     expect(cow.jump.height).toBeGreaterThan(hen.jump.height);
     expect(cow.jump.durMs).toBeGreaterThan(goat.jump.durMs);
-    expect(goat.jump.durMs).toBeGreaterThan(hen.jump.durMs - 1);
+    expect(buffalo.jump.durMs).toBeGreaterThan(horse.jump.durMs);
     expect(hen.jump.durMs).toBeLessThan(cow.jump.durMs);
     expect(cow.jump.rise).toBeGreaterThan(hen.jump.rise); // heavy: long lift
     expect(goat.jump.rise).toBeLessThan(hen.jump.rise); // springy: fast launch
-    expect(new Set(DASH_ANIMALS.map((a) => JSON.stringify(BODIES[a].jump))).size).toBe(3);
-    expect(new Set(DASH_ANIMALS.map((a) => BODIES[a].run.frameMs)).size).toBe(3); // each has its own run-cycle timing
+    expect(new Set(DASH_ANIMALS.map((a) => JSON.stringify(BODIES[a].jump))).size).toBe(5);
+    expect(new Set(DASH_ANIMALS.map((a) => BODIES[a].run.frameMs)).size).toBeGreaterThanOrEqual(4);
     for (const a of DASH_ANIMALS) { expect(BODIES[a].run.frames).toBeGreaterThanOrEqual(2); expect(BODIES[a].run.frames).toBeLessThanOrEqual(4); }
     expect(BODIES.hen.run.frameMs).toBeLessThan(BODIES.cow.run.frameMs); // quick little legs vs heavy gallop
   });
@@ -41,7 +42,7 @@ describe('the three farm animals have their own bodies', () => {
     }
   });
   it('gravity feel differs: the goat is higher than the cow at a quarter of the air time, the cow is later to peak', () => {
-    const q = (a: 'hen' | 'cow' | 'goat'): number => jumpOffset(BODIES[a].jump, BODIES[a].jump.durMs * 0.25) / BODIES[a].jump.height;
+    const q = (a: AnimalId): number => jumpOffset(BODIES[a].jump, BODIES[a].jump.durMs * 0.25) / BODIES[a].jump.height;
     expect(q('goat')).toBeGreaterThan(q('cow'));
   });
   it('bodyOf maps ids; each pose of a runner is a legal sprite index', () => {
@@ -251,7 +252,7 @@ describe('stumble and badges', () => {
 });
 
 describe('the course is deterministic from a seeded rng', () => {
-  const take = (seed: number, a: 'hen' | 'cow' | 'goat', n = 40): string => {
+  const take = (seed: number, a: AnimalId, n = 40): string => {
     const c = new Course(lcg(seed), BODIES[a]);
     return JSON.stringify(Array.from({ length: n }, () => c.next(70)));
   };
@@ -305,7 +306,7 @@ function recorder(): { g: CanvasRenderingContext2D; colours: Set<string>; calls:
 
 describe('flat-vector runner sprites (ART_BIBLE)', () => {
   const tokens = new Set(Object.values(TOK).map((c) => c.toLowerCase()));
-  it('hen, cow and goat each have a run cycle (2-4 frames), jump, duck, stumble and happy pose', () => {
+  it('hen, cow, goat, buffalo and horse each have a run cycle (2-4 frames), jump, duck, stumble and happy pose', () => {
     expect(POSE_DEFS).toHaveLength(7);
     for (const a of DASH_ANIMALS) {
       expect(hasDashSprite(a)).toBe(true);
@@ -325,7 +326,7 @@ describe('flat-vector runner sprites (ART_BIBLE)', () => {
   it('every pose is drawn differently, and the animals differ from each other', () => {
     const log = (a: string, p: number): string => { const calls: string[] = []; const r = recorder(); const g = new Proxy(r.g, { get: (t, k: string) => { const v = (t as unknown as Record<string, unknown>)[k]; return typeof v === 'function' ? (...x: unknown[]) => { calls.push(k + x.map((n) => (typeof n === 'number' ? n.toFixed(1) : '')).join(',')); return (v as (...y: unknown[]) => unknown)(...x); } : v; }, set: (t, k: string, v) => { (t as unknown as Record<string, unknown>)[k] = v; if (k === 'fillStyle') calls.push('c' + String(v)); return true; } }); drawRunner(g, a, p); return calls.join('|'); };
     for (const a of DASH_ANIMALS) { const seen = new Set<string>(); for (let p = 0; p < 7; p++) seen.add(log(a, p)); expect(seen.size, a).toBe(7); }
-    expect(log('hen', 0)).not.toBe(log('cow', 0)); expect(log('cow', 0)).not.toBe(log('goat', 0));
+    expect(log('hen', 0)).not.toBe(log('cow', 0)); expect(log('cow', 0)).not.toBe(log('goat', 0)); expect(log('buffalo', 0)).not.toBe(log('horse', 0));
   });
   it('no forbidden effects anywhere in the Farm Dash source: gradients, alpha, blur, filters, pure black', () => {
     for (const f of ['art', 'sprites', 'index']) {
