@@ -2,12 +2,13 @@
 /** Fixed logical canvas: 240 x 135, letterboxed by the page (centred, night background). */
 export const LOGICAL_W = 240;
 export const LOGICAL_H = 135;
-/** Integer scale when it wastes little (>= 80% of the best fit); otherwise the fractional best fit. Never above the viewport. */
+/**
+ * Integer scale only (V1_BRIEF + ART_BIBLE s3): the 240 x 135 canvas is letterboxed, never stretched to a fraction.
+ * The one exception is a viewport smaller than 240 x 135, where the picture would not fit at all.
+ */
 export function fitScale(vw: number, vh: number): number {
   const s = Math.min(Math.max(vw, 1) / LOGICAL_W, Math.max(vh, 1) / LOGICAL_H);
-  if (s < 1) return s;
-  const i = Math.floor(s);
-  return i / s >= 0.8 ? i : s;
+  return s < 1 ? s : Math.floor(s);
 }
 
 export type Ease = (t: number) => number;

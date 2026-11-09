@@ -49,6 +49,11 @@ export const BUMP: Recipe = recipe('bump', [
 export const SECRET: Recipe = recipe('secret', [880, 1174.7, 1568, 2093].map((f, i) => note('sine', f, i * 0.06, 0.2, 0.13, { release: 0.15 })));
 /** A buddy hops aboard: two quick bouncy notes. */
 export const BUDDY: Recipe = recipe('buddy', [note('triangle', 392, 0, 0.1, 0.2), note('triangle', 587.33, 0.09, 0.16, 0.2)]);
+/** A buddy shortcut: a quick rising whoosh and a sparkle. */
+export const SHORTCUT_SFX: Recipe = recipe('shortcut', [
+  note('triangle', 330, 0, 0.22, 0.18, { f1: 880 }),
+  note('sine', 1318.5, 0.16, 0.18, 0.1),
+]);
 /** Feeding: three soft munches. */
 export const FEED: Recipe = recipe('feed', [0, 0.14, 0.28].map((t) => ({ kind: 'noise', f0: 0, t, dur: 0.1, gain: 0.16, attack: 0.012, release: 0.07, filter: { type: 'lowpass', f0: 900, f1: 400, q: 0.8 } }) as Layer));
 /** Meeting the friend: a warm two-note hello (with the rustle just before it). */
@@ -57,5 +62,5 @@ export const MEET: Recipe = recipe('meet', [note('sine', 523.25, 0, 0.18, 0.2), 
 /** Locale keys for every cue (all must exist in en.json; tests/forage.test.ts checks 2-6 words). */
 export const CAPTION = {
   pickup: 'cc.forage.pickup', streak: 'cc.forage.streak', sting: 'cc.forage.sting', rustle: 'cc.forage.rustle',
-  bump: 'cc.forage.bump', secret: 'cc.forage.secret', buddy: 'cc.forage.buddy', feed: 'cc.forage.feed', meet: 'cc.forage.meet',
+  bump: 'cc.forage.bump', secret: 'cc.forage.secret', buddy: 'cc.forage.buddy', shortcut: 'cc.forage.shortcut', feed: 'cc.forage.feed', meet: 'cc.forage.meet',
 } as const;

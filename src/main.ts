@@ -18,7 +18,7 @@ import { isCard } from './cards/data';
 import './games/forage'; // Jungle door: Forage Trail (registers itself)
 // Farm and House doors are "coming soon" in v1 (docs/design/V1_BRIEF.md): their games are not imported, so gameForShelf() is undefined
 // and the home screen shows the closed door. The code stays in src/games/{farm,house} for later.
-import './games/trump'; // home picture button: Card clash (registers itself)
+// Card clash (src/games/trump) is out of v1 scope: files kept, not imported, so no registry entry and no home button
 import atlasJson from './gen/atlas.json';
 import atlasUrl from './gen/atlas.png';
 import cardAtlasJson from './gen/card-atlas.json';

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-  ANIMALS_OF, BEHAVIOUR_OF, DEFAULT_ROUND, FOODS, LANE_Y, Ph, ROUTES, Round, SAME_LANE_P, WILD_ANIMALS, centreOf, foodOf, hazardCount,
-  laneAt, newWaitingMemory, pickBuddies, pickLane, pickWaiting, rollSpawn, secretChance, topFor,
+  ANIMALS_OF, BEHAVIOUR_OF, DEFAULT_ROUND, FOODS, LANE_Y, Ph, ROUTES, Round, SAME_LANE_P, SHORTCUT, V1_ANIMALS, V1_BUDDIES, WILD_ANIMALS, centreOf, foodOf,
+  laneAt, newWaitingMemory, pickBuddies, pickLane, pickWaiting, rollSpawn, shortcutOf, topFor,
 } from '../src/games/forage/logic';
 import { effectOf } from '../src/cards/abilities';
 import { lcg } from '../src/audio/recipes';
@@ -23,8 +23,9 @@ describe('food <-> animal mapping', () => {
   });
 });
 
-describe('friend choice and buddies', () => {
-  it('always three distinct jungle animals, and unowned ones come first', () => {
+describe('v1 scope: four friends, two buddies', () => {
+  it('only bear, monkey, elephant and peacock are ever offered; lion, tiger and giraffe never', () => {
+    expect([...V1_ANIMALS].sort()).toEqual(['bear', 'elephant', 'monkey', 'peacock']);
     const rng = lcg(42);
     for (let trial = 0; trial < 300; trial++) {
       const owned = new Set(WILD_ANIMALS.filter(() => rng() < 0.5));
@@ -32,39 +33,54 @@ describe('friend choice and buddies', () => {
       for (let r = 0; r < 6; r++) {
         const w = pickWaiting(owned, mem, rng);
         expect(new Set(w).size).toBe(3);
-        for (const a of w) expect(WILD_ANIMALS).toContain(a);
-        const unowned = WILD_ANIMALS.filter((a) => !owned.has(a));
+        for (const a of w) expect(V1_ANIMALS).toContain(a);
+        const unowned = V1_ANIMALS.filter((a) => !owned.has(a));
         if (unowned.length) expect(w.some((a) => !owned.has(a))).toBe(true);
       }
     }
   });
-  it('every animal is offered within a few rounds', () => {
+  it('every friend is offered within two rounds', () => {
     const mem = newWaitingMemory(); const rng = lcg(7); const seen = new Set<string>();
-    for (let r = 0; r < 3; r++) pickWaiting(new Set(), mem, rng).forEach((a) => seen.add(a));
-    expect(seen.size).toBe(6);
+    for (let r = 0; r < 2; r++) pickWaiting(new Set(), mem, rng).forEach((a) => seen.add(a));
+    expect(seen.size).toBe(4);
   });
-  it('buddies are owned friends, never the friend being helped, at most three', () => {
-    const owned = new Set(WILD_ANIMALS);
-    const b = pickBuddies(owned, 'bear', newWaitingMemory(), lcg(3));
-    expect(b.length).toBe(3);
-    expect(b).not.toContain('bear');
-    expect(pickBuddies(new Set(), 'bear', newWaitingMemory(), lcg(3))).toEqual([]);
+  it('lion and tiger keep their card data but have no active buddy effect', () => {
+    expect(cardOf('lion').food).toBe('meal'); expect(cardOf('tiger').food).toBe('meal');
+    expect(effectOf('lion', abilityOf)).toBe('none'); expect(effectOf('tiger', abilityOf)).toBe('none');
+    expect(effectOf('bear', abilityOf)).toBe('none'); expect(effectOf('peacock', abilityOf)).toBe('none');
   });
-  it('every jungle animal has a food and a working buddy effect', () => {
-    for (const a of WILD_ANIMALS) { expect(FOODS).toContain(foodOf(a)); expect(effectOf(a, abilityOf)).not.toBe('none'); }
+  it('only Gajju (trunk) and Bunty (climb) have an effect', () => {
+    expect(effectOf('elephant', abilityOf)).toBe('trunk');
+    expect(effectOf('monkey', abilityOf)).toBe('climb');
+    expect(effectOf(null, abilityOf)).toBe('none');
+  });
+  it('buddies are offered from the very first run: guests, owned or not, never the friend being helped', () => {
+    expect([...V1_BUDDIES].sort()).toEqual(['elephant', 'monkey']);
+    // nothing owned at all (run 1): still a buddy tile
+    expect(pickBuddies('bear', newWaitingMemory(), lcg(3)).sort()).toEqual(['elephant', 'monkey']);
+    expect(pickBuddies('peacock', newWaitingMemory(), lcg(3)).length).toBe(2);
+    expect(pickBuddies('elephant', newWaitingMemory(), lcg(3))).toEqual(['monkey']);
+    expect(pickBuddies('monkey', newWaitingMemory(), lcg(3))).toEqual(['elephant']);
+    for (const f of V1_ANIMALS) expect(pickBuddies(f, newWaitingMemory(), lcg(1)).length).toBeGreaterThan(0);
+  });
+  it('every v1 friend has a food', () => { for (const a of V1_ANIMALS) expect(FOODS).toContain(foodOf(a)); });
+  it('the food <-> animal map still covers the six jungle cards', () => {
+    expect([...new Set(FOODS.flatMap((f) => ANIMALS_OF[f]))].sort()).toEqual([...WILD_ANIMALS].sort());
   });
 });
 
 describe('food behaviours and routes', () => {
   it('every food has its own behaviour', () => { for (const f of FOODS) expect(BEHAVIOUR_OF[f]).toBeTruthy(); });
-  it('the roar clears hazards; the climb and sniff guarantee the secret', () => {
-    for (const r of ROUTES) expect(hazardCount(r, 'roar')).toBe(0);
-    expect(secretChance('high', 'climb')).toBe(1);
-    expect(secretChance('river', 'sniff')).toBe(1);
+  it('a buddy does not change what a route spawns, only whether a shortcut gate appears', () => {
+    for (const r of ROUTES) { const a = lcg(5), b = lcg(5); for (let i = 0; i < 500; i++) expect(rollSpawn(r, 'trunk', a)).toBe(rollSpawn(r, 'none', b)); }
+    expect(shortcutOf('none')).toBeNull();
+    expect(shortcutOf('trunk')).toBe(SHORTCUT.trunk);
+    expect(shortcutOf('climb')).toBe(SHORTCUT.climb);
   });
-  it('a roaring buddy never meets a hazard on the trail', () => {
-    const rng = lcg(11);
-    for (const r of ROUTES) for (let i = 0; i < 2000; i++) expect(rollSpawn(r, 'roar', rng)).not.toBe('hazard');
+  it('the two shortcuts differ: a straight row on the top lane vs a climb through all three lanes', () => {
+    expect(SHORTCUT.trunk.pattern.map((p) => p.lane)).toEqual([0, 0, 0]);
+    expect(SHORTCUT.climb.pattern.map((p) => p.lane)).toEqual([2, 1, 0]);
+    expect(SHORTCUT.trunk.gateLane).not.toBe(SHORTCUT.climb.gateLane);
   });
 });
 
@@ -110,8 +126,7 @@ describe('round state machine', () => {
     expect(r.phase).toBe(Ph.Trail);
     r.pickup();
     expect(r.phase).toBe(Ph.Meet);
-    r.pickup(); expect(r.carried).toBe(DEFAULT_ROUND.need);
-    expect(r.tick(99999)).toBe(false); // waiting for ever is fine: nobody is fed until the child taps
+    expect(r.tick(99999)).toBe(false); // waiting for ever is fine: nobody is fed until the child chooses to
     expect(r.phase).toBe(Ph.Meet);
     expect(r.feed()).toBe(true);
     r.tick(DEFAULT_ROUND.meetMs - 1); expect(r.phase).toBe(Ph.Meet);
@@ -120,6 +135,31 @@ describe('round state machine', () => {
     r.next();
     expect(r.phase).toBe(Ph.Ask);
   });
+  it('the basket holds 5 while the trail offers 6', () => {
+    expect([DEFAULT_ROUND.need, DEFAULT_ROUND.offer, DEFAULT_ROUND.capacity]).toEqual([5, 6, 5]);
+    const r = start(); expect(r.owesFood()).toBe(6);
+    r.offer(5); expect(r.owesFood()).toBe(1);
+    r.offer(); expect(r.owesFood()).toBe(0); r.offer(); expect(r.owesFood()).toBe(0);
+  });
+  it('a full basket leaves the 6th food: no penalty, no phase change, no spill, the run waits for the feed', () => {
+    const r = start(); r.offer(6);
+    for (let i = 0; i < 5; i++) expect(r.pickup()).toBe(true);
+    expect(r.phase).toBe(Ph.Meet);
+    expect(r.pickup()).toBe(false); // the 6th does not fit
+    expect(r.carried).toBe(5);
+    r.leave(); expect(r.left).toBe(1);
+    expect(r.bump()).toBe(false); expect(r.spills).toBe(0); // nothing can spill the full basket in the meet beat
+    expect(r.tick(60000)).toBe(false); expect(r.phase).toBe(Ph.Meet); // never auto-ends
+    expect(r.feed()).toBe(true);
+    r.tick(DEFAULT_ROUND.meetMs);
+    expect(r.phase).toBe(Ph.Reveal);
+    const res = r.result();
+    expect(res.carried).toBe(5); expect(res.left).toBe(1); expect(res.badges).toContain('clean'); expect(res.badges).toContain('full');
+  });
+  it('feed does nothing before the basket is full', () => {
+    const r = start(); r.pickup(2);
+    expect(r.feed()).toBe(false); expect(r.phase).toBe(Ph.Trail);
+  });
   it('a bump spills at most one item and never ends the run', () => {
     const r = start(); r.pickup(2);
     expect(r.bump()).toBe(true); expect(r.carried).toBe(1);
@@ -127,9 +167,11 @@ describe('round state machine', () => {
     expect(r.carried).toBe(0);
     expect(r.phase).toBe(Ph.Trail);
   });
-  it('the elephant trunk never spills; the tiger saves the first bump', () => {
-    const t = start('trunk', 'elephant'); t.pickup(3); t.bump(); t.bump(); expect(t.carried).toBe(3);
-    const p = start('pounce', 'tiger'); p.pickup(3); expect(p.bump()).toBe(false); expect(p.bump()).toBe(true); expect(p.carried).toBe(2);
+  it('the buddy shortcut needs the matching buddy and works once; it never changes what fills the basket', () => {
+    const none = start(); expect(none.takeShortcut()).toBe(false);
+    const t = start('trunk', 'elephant'); expect(t.takeShortcut()).toBe(true); expect(t.takeShortcut()).toBe(false); expect(t.result().shortcut).toBe(true);
+    const c = start('climb', 'monkey'); expect(c.takeShortcut()).toBe(true);
+    t.bump(); expect(t.bumps).toBe(1); // the trunk no longer cancels spills: it opens a route instead
   });
   it('every trail completes with no buddy (a buddy ability is never required)', () => {
     const r = start('none', null);

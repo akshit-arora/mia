@@ -1,19 +1,17 @@
 // One ability per animal, derived from a real body trait. Abilities are OPTIONAL: they open a
-// shortcut, a badge or a comfort, never a required path. In the Jungle flagship the six wild
-// animals all have a working effect; farm/house effects are reserved for their chapters.
-export type BuddyEffect = 'roar' | 'pounce' | 'trunk' | 'climb' | 'sniff' | 'fan' | 'none';
+// shortcut or a comfort, never a required path. V1 (docs/design/V1_BRIEF.md) activates exactly two:
+// Gajju's trunk (a HIGH branch shortcut) and Bunty's climb (a VINE shortcut). Every other ability
+// stays on the card as data and maps to 'none' on the trail, so the code for it can come back later.
+export type BuddyEffect = 'trunk' | 'climb' | 'none';
 
-/** Ability id (stored on the card) -> the effect the trail understands. */
+/** Ability id (stored on the card) -> the effect the trail understands. Only the two v1 buddies do anything. */
 export const EFFECT_OF: Record<string, BuddyEffect> = {
-  roar: 'roar', // lion: the roar clears hazards from the chosen route
-  pounce: 'pounce', // tiger: the first bump is free
-  trunk: 'trunk', // elephant: never spills food when bumped
-  climb: 'climb', // monkey: the high route always hides the secret
-  sniff: 'sniff', // bear: the nose finds extra food
-  fan: 'fan', // peacock: no sticky slowdown, and a gift on the thicket
+  trunk: 'trunk', // elephant: reaches the high branch, a shortcut over the trail
+  climb: 'climb', // monkey: swings up a vine, a shortcut through the trees
+  roar: 'none', pounce: 'none', sniff: 'none', fan: 'none', // deferred past v1
 };
 
-/** The effect a buddy brings, or 'none' for no buddy / a card with no trail effect yet. */
+/** The effect a buddy brings, or 'none' for no buddy / an ability that is not active in v1. */
 export function effectOf(animalId: string | null | undefined, abilityOf: (id: string) => string | undefined): BuddyEffect {
   if (!animalId) return 'none';
   const ability = abilityOf(animalId);
@@ -22,11 +20,7 @@ export function effectOf(animalId: string | null | undefined, abilityOf: (id: st
 
 /** Short, spoken lines for the buddy row (2 to 6 words, same rule as every other voice line). */
 export const EFFECT_LINE: Record<BuddyEffect, string> = {
-  roar: 'Roar clears the way!',
-  pounce: 'Pounce saves one bump!',
-  trunk: 'Trunk never spills!',
-  climb: 'Climb finds the secret!',
-  sniff: 'Sniff finds extra food!',
-  fan: 'Fan calms the bees!',
+  trunk: 'Trunk reaches the high branch!',
+  climb: 'Climb swings up the vine!',
   none: '',
 };

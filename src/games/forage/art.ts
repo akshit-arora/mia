@@ -266,3 +266,24 @@ export function vectorAnimal(id: string, pose: Pose, size: number): Cv | null {
   g.scale(size / 64, size / 64);
   return drawAnimal(g, id, pose) ? c : null;
 }
+
+/**
+ * The two optional shortcut gates (v1 buddies): [high branch for Gajju's trunk, vine for Bunty's climb], 30 x 30.
+ * Flat shapes, one outline, no gradients. They only ever appear when that buddy came along.
+ */
+export function shortcutSprites(): Cv[] {
+  const [br, gb] = mk(30, 30);
+  gb.fillStyle = INK; gb.fillRect(0, 12, 30, 9); gb.fillRect(18, 5, 5, 9);
+  gb.fillStyle = '#8a5a2b'; gb.fillRect(1, 13, 28, 6); gb.fillRect(19, 6, 3, 8);
+  gb.fillStyle = '#6b4220'; gb.fillRect(1, 17, 28, 2);
+  disc(gb, 8, 10, 6.5, INK); disc(gb, 8, 10, 5, '#3dbb52');
+  disc(gb, 24, 22, 6.5, INK); disc(gb, 24, 22, 5, '#2c8a3e');
+  gb.fillStyle = '#ffd93d'; gb.fillRect(14, 8, 3, 3); // a sparkle that says "up here"
+  const [vn, gv] = mk(30, 30);
+  gv.fillStyle = INK; gv.fillRect(13, 0, 6, 30);
+  gv.fillStyle = '#2c8a3e'; gv.fillRect(14, 0, 4, 30);
+  gv.fillStyle = INK; gv.fillRect(6, 7, 9, 6); gv.fillRect(17, 16, 9, 6);
+  gv.fillStyle = '#3dbb52'; gv.fillRect(7, 8, 7, 4); gv.fillRect(18, 17, 7, 4);
+  disc(gv, 15, 27, 3.5, INK); disc(gv, 15, 27, 2.2, '#ffd93d');
+  return [br, vn];
+}

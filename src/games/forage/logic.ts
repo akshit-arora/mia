@@ -1,8 +1,9 @@
 // Forage Trail 2.0: the pure parts (no DOM, no canvas), unit-tested in tests/forage.test.ts.
 //
 // The loop is friend-first. The child picks a waiting animal, then a route, then fills the basket
-// with that animal's own food. Bumps spill food but never end the run; the run ends when the
-// basket is full and the child feeds the friend. Three optional badges record how it went.
+// with that animal's own food. Bumps spill food but never end the run. The basket holds 5 while the
+// trail offers 6: once it is full the run ends ONLY when the child chooses to feed (a tap on the
+// friend or the basket); a 6th food left on the trail costs nothing. Three optional badges record how it went.
 import type { BuddyEffect } from '../../cards/abilities';
 
 export type Rng = () => number;
@@ -10,8 +11,13 @@ export type FoodId = 'fruit' | 'honey' | 'sugarcane' | 'seeds' | 'meal';
 
 export const FOODS: readonly FoodId[] = ['fruit', 'honey', 'sugarcane', 'seeds', 'meal'];
 
-/** The six Jungle animals (card ids). */
+/** The six Jungle cards in the data (lion and tiger keep their card data but are not offered in v1). */
 export const WILD_ANIMALS: readonly string[] = ['lion', 'tiger', 'elephant', 'monkey', 'bear', 'peacock'];
+
+/** V1 scope (docs/design/V1_BRIEF.md): the only friends the Ask board and the shelf strip show. */
+export const V1_ANIMALS: readonly string[] = ['bear', 'monkey', 'elephant', 'peacock'];
+/** V1 buddies: only these two have an active ability. They can come along even when not yet owned (a guest). */
+export const V1_BUDDIES: readonly string[] = ['elephant', 'monkey'];
 
 /** The animal decides the food. Meal brings lion OR tiger; the covered bowl is never a hunt. */
 export const FOOD_OF: Record<string, FoodId> = {
@@ -24,6 +30,7 @@ export const ANIMALS_OF: Record<FoodId, readonly string[]> = {
   fruit: ['monkey'], honey: ['bear'], sugarcane: ['elephant'], seeds: ['peacock'], meal: ['lion', 'tiger'],
 };
 export const isJungleAnimal = (id: string): boolean => WILD_ANIMALS.includes(id);
+export const isV1Animal = (id: string): boolean => V1_ANIMALS.includes(id);
 
 // ---------------------------------------------------------------- food behaviour
 /** How each food moves / feels on the trail. The child learns it by playing, not by reading. */
@@ -49,33 +56,42 @@ export const ROUTE: Record<RouteId, RouteDef> = {
   high: { speed: 1.0, hazards: 2, food: 0.6, gift: 0.15, secret: 0.5 }, // balanced, best secret odds
 };
 
-/** Secret odds after the buddy's ability is applied. */
-export function secretChance(route: RouteId, effect: BuddyEffect): number {
-  if (effect === 'climb' && route === 'high') return 1;
-  if (effect === 'fan' && route === 'thicket') return 1;
-  if (effect === 'sniff') return 1;
+/** Secret odds. The buddy does not change them in v1: the trunk and the climb change the ROUTE (see shortcut below). */
+export function secretChance(route: RouteId, _effect: BuddyEffect): number {
   return ROUTE[route].secret;
 }
 
-/** Hazards actually spawned on a route after the buddy's ability. */
-export function hazardCount(route: RouteId, effect: BuddyEffect): number {
-  return effect === 'roar' ? 0 : ROUTE[route].hazards;
+/** Hazards a route tends to carry (no v1 buddy removes them). */
+export function hazardCount(route: RouteId, _effect: BuddyEffect): number {
+  return ROUTE[route].hazards;
 }
-
-/** Extra food the bear's nose reveals (on top of normal spawns). */
-export const SNIFF_BONUS_FOOD = 2;
 
 /** One spawn roll: the wanted food, a gift, or a hazard. */
 export type SpawnKind = 'food' | 'gift' | 'hazard';
 export function rollSpawn(route: RouteId, effect: BuddyEffect, rng: Rng): SpawnKind {
   const r = ROUTE[route];
-  const hazardP = hazardCount(route, effect) === 0 ? 0 : effect === 'pounce' ? r.hazards * 0.06 : r.hazards * 0.09;
+  const hazardP = hazardCount(route, effect) * 0.09;
   const x = rng();
   if (x < r.food) return 'food';
   if (x < r.food + r.gift) return 'gift';
   if (x < r.food + r.gift + hazardP) return 'hazard';
   return rng() < 0.5 ? 'food' : 'gift';
 }
+
+// ---------------------------------------------------------------- buddy shortcut (optional, never required)
+/**
+ * A shortcut gate appears on the trail only when the buddy is the elephant (trunk: a HIGH branch)
+ * or the monkey (climb: a VINE). Steering the basket into the gate lays down a short pattern of
+ * the wanted food that the other trails never have: a straight row along the top lane for the
+ * trunk, a diagonal climb through all three lanes for the vine. Ignoring the gate costs nothing:
+ * the normal spawns still fill the basket (tests/forage-v1.test.ts: no-buddy completion).
+ */
+export interface ShortcutDef { gateLane: number; pattern: ReadonlyArray<{ lane: number; dx: number }> }
+export const SHORTCUT: Record<'trunk' | 'climb', ShortcutDef> = {
+  trunk: { gateLane: 0, pattern: [{ lane: 0, dx: 0 }, { lane: 0, dx: 24 }, { lane: 0, dx: 48 }] },
+  climb: { gateLane: 2, pattern: [{ lane: 2, dx: 0 }, { lane: 1, dx: 24 }, { lane: 0, dx: 48 }] },
+};
+export const shortcutOf = (effect: BuddyEffect): ShortcutDef | null => (effect === 'trunk' || effect === 'climb' ? SHORTCUT[effect] : null);
 
 // ---------------------------------------------------------------- who is waiting / buddy
 /** Fair rotation memory: how often each animal has been offered. */
@@ -88,8 +104,8 @@ export const newWaitingMemory = (): WaitingMemory => ({ shown: {}, lastFriend: '
  */
 export function pickWaiting(owned: ReadonlySet<string>, mem: WaitingMemory, rng: Rng): [string, string, string] {
   const score = (a: string): number => (mem.shown[a] ?? 0) * 10 + (owned.has(a) ? 4 : 0) + rng();
-  const unowned = WILD_ANIMALS.filter((a) => !owned.has(a)).sort((a, b) => score(a) - score(b));
-  const rest = WILD_ANIMALS.filter((a) => !unowned.includes(a)).sort((a, b) => score(a) - score(b));
+  const unowned = V1_ANIMALS.filter((a) => !owned.has(a)).sort((a, b) => score(a) - score(b));
+  const rest = V1_ANIMALS.filter((a) => !unowned.includes(a)).sort((a, b) => score(a) - score(b));
   const chosen = unowned.slice(0, 3);
   while (chosen.length < 3 && rest.length) chosen.push(rest.shift()!);
   for (const a of chosen) mem.shown[a] = (mem.shown[a] ?? 0) + 1;
@@ -98,13 +114,13 @@ export function pickWaiting(owned: ReadonlySet<string>, mem: WaitingMemory, rng:
 }
 
 /**
- * Up to three owned friends to bring as buddies, excluding the friend being helped.
- * `null` is always available (go solo) and is appended by the UI, never returned here.
+ * Buddies on offer: the V1 buddies (Gajju the elephant, Bunty the monkey) other than the friend being helped.
+ * They are offered from the very first run, owned or not: a guest buddy rides along without being granted
+ * its card. `null` (go solo) is always available and is appended by the UI, never returned here.
  */
-export function pickBuddies(owned: ReadonlySet<string>, friend: string, mem: WaitingMemory, rng: Rng): string[] {
-  const pool = WILD_ANIMALS.filter((a) => owned.has(a) && a !== friend);
+export function pickBuddies(friend: string, mem: WaitingMemory, rng: Rng): string[] {
   const score = (a: string): number => (a === mem.lastBuddy ? -40 : 0) + rng();
-  return pool.sort((a, b) => score(a) - score(b)).slice(0, 3);
+  return V1_BUDDIES.filter((a) => a !== friend).sort((a, b) => score(a) - score(b));
 }
 
 // ---------------------------------------------------------------- round state machine
@@ -112,12 +128,13 @@ export const Ph = { Ask: 0, Trail: 1, Meet: 2, Reveal: 3 } as const;
 export type PhaseId = (typeof Ph)[keyof typeof Ph];
 
 export interface RoundOpts {
-  need: number; // food needed to fill the basket
-  capacity: number; // shown on the HUD (same as need; kept separate for future buddies)
+  need: number; // food needed to fill the basket (the basket holds 5)
+  offer: number; // food the trail offers in a run (6: leaving one is a choice, never a penalty)
+  capacity: number; // shown on the HUD (same as need)
   forkAt: number; // ms into the trail when the route signs arrive
   meetMs: number; // length of the feeding beat after the child taps
 }
-export const DEFAULT_ROUND: RoundOpts = { need: 5, capacity: 5, forkAt: 6500, meetMs: 1200 };
+export const DEFAULT_ROUND: RoundOpts = { need: 5, offer: 6, capacity: 5, forkAt: 6500, meetMs: 1200 };
 
 export type BadgeId = 'clean' | 'full' | 'secret';
 export const BADGES: readonly BadgeId[] = ['clean', 'full', 'secret'];
@@ -130,13 +147,15 @@ export interface RunResult {
   capacity: number;
   bumps: number;
   spills: number;
+  left: number; // food left on the trail after the basket was full (a choice, never a penalty)
+  shortcut: boolean;
   secretFound: boolean;
   badges: BadgeId[];
 }
 
 /**
  * One round: Ask (pick friend + buddy) -> Trail (fork, food, bumps) -> Meet (feed) -> Reveal.
- * There is no fail state: a bump only spills one item and slows the basket for a moment.
+ * There is no fail state: a bump only spills one item and wobbles the basket for a moment.
  */
 export class Round {
   phase: PhaseId = Ph.Ask;
@@ -150,6 +169,9 @@ export class Round {
   carried = 0;
   bumps = 0;
   spills = 0;
+  offered = 0; // wanted food laid on the trail so far
+  left = 0;
+  shortcut = false;
   secretFound = false;
   fed = false;
   constructor(readonly opts: RoundOpts = DEFAULT_ROUND) {}
@@ -159,7 +181,7 @@ export class Round {
     this.friend = friend; this.buddy = buddy; this.effect = effect;
     this.food = foodOf(friend);
     this.route = 'high'; this.routeChosen = false;
-    this.carried = 0; this.bumps = 0; this.spills = 0; this.secretFound = false; this.fed = false;
+    this.carried = 0; this.bumps = 0; this.spills = 0; this.offered = 0; this.left = 0; this.shortcut = false; this.secretFound = false; this.fed = false;
     this.go(Ph.Trail);
   }
 
@@ -170,19 +192,39 @@ export class Round {
     return true;
   }
 
-  /** A wanted food is in the basket. Reaching `need` moves to the Meet beat. */
-  pickup(n = 1): void {
-    if (this.phase !== Ph.Trail) return;
+  /** The trail lays down one wanted food (the 6th is guaranteed by the caller: see `owesFood`). */
+  offer(n = 1): void { this.offered += n; }
+
+  /** Wanted food still owed so the trail has offered `opts.offer` of them. */
+  owesFood(): number { return Math.max(0, this.opts.offer - this.offered); }
+
+  /**
+   * A wanted food reaches the basket. Returns false when the basket is already full: the food is left
+   * where it is, with no penalty and no slowdown. Reaching `need` moves to the Meet beat, but the run
+   * only ends when the child feeds.
+   */
+  pickup(n = 1): boolean {
+    if (this.phase !== Ph.Trail || this.carried >= this.opts.need) return false;
     this.carried = Math.min(this.opts.need, this.carried + n);
     if (this.carried >= this.opts.need) this.go(Ph.Meet);
+    return true;
   }
 
-  /** A bump. Spills one item when the basket is not empty and the buddy cannot save it. */
+  /** A wanted food drifts past a full basket: counted, never punished. */
+  leave(): void { if (this.phase === Ph.Meet && !this.fed) this.left++; }
+
+  /** Gajju's high branch or Bunty's vine was taken. Only with the matching buddy, once per run. */
+  takeShortcut(): boolean {
+    if (this.phase !== Ph.Trail || this.shortcut || !shortcutOf(this.effect)) return false;
+    this.shortcut = true;
+    return true;
+  }
+
+  /** A bump. Spills one item when the basket is not empty. */
   bump(): boolean {
     if (this.phase !== Ph.Trail) return false;
     this.bumps++;
-    const saved = this.effect === 'trunk' || (this.effect === 'pounce' && this.bumps === 1);
-    if (saved || this.carried === 0) return false;
+    if (this.carried === 0) return false;
     this.carried = Math.max(0, this.carried - 1);
     this.spills++;
     return true;
@@ -194,7 +236,7 @@ export class Round {
     this.secretFound = true;
   }
 
-  /** The child feeds the friend: one tap starts the meet beat. */
+  /** The child chooses to feed the friend (a tap on the friend or the basket once it is full): the meet beat starts. */
   feed(): boolean {
     if (this.phase !== Ph.Meet || this.fed) return false;
     this.fed = true; this.t = 0;
@@ -217,7 +259,7 @@ export class Round {
     if (this.secretFound) badges.push('secret');
     return {
       friend: this.friend, food: this.food, route: this.route, carried: this.carried,
-      capacity: this.opts.capacity, bumps: this.bumps, spills: this.spills,
+      capacity: this.opts.capacity, bumps: this.bumps, spills: this.spills, left: this.left, shortcut: this.shortcut,
       secretFound: this.secretFound, badges,
     };
   }

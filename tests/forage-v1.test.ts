@@ -1,12 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { LOGICAL_H, LOGICAL_W, fitScale } from '../src/engine/stage';
-import { DEFAULT_ROUND, Ph, ROUTES, Round, WILD_ANIMALS, captionGate } from '../src/games/forage/logic';
+import { DEFAULT_ROUND, Ph, ROUTES, Round, V1_ANIMALS, captionGate } from '../src/games/forage/logic';
 import { CAPTION, BUMP, BUDDY, FEED, MEET, SECRET } from '../src/games/forage/sounds';
 import { POSES, TOK, VECTOR_ANIMALS, drawAnimal } from '../src/games/forage/sprites';
 import { effectOf } from '../src/cards/abilities';
 import { abilityOf } from '../src/cards/data';
 import { gameForShelf, listGames } from '../src/app/registry';
 import en from '../src/locales/en.json';
+import hi from '../src/locales/hi.json';
+
+const RAW = import.meta.glob(['../src/main.ts', '../src/app/home.ts', '../src/cards/scenes.ts', '../src/games/forage/{art,index}.ts', '../src/games/trump/index.ts'], { query: '?raw', import: 'default', eager: true }) as Record<string, string>;
+const src = (p: string): string => RAW['../' + p];
 
 /** A fake 2D context that records every colour a sprite uses and does nothing else. */
 function recorder(): { g: CanvasRenderingContext2D; colours: Set<string>; calls: Set<string>; log: string[] } {
@@ -43,16 +47,25 @@ describe('flat-vector animal sprites (ART_BIBLE)', () => {
 
 describe('fixed 240x135 composition', () => {
   it('is 240 x 135', () => { expect([LOGICAL_W, LOGICAL_H]).toEqual([240, 135]); });
-  it('uses an integer scale when it wastes little, and never exceeds the viewport', () => {
+  it('uses integer scales only (letterboxed), and never exceeds the viewport', () => {
     expect(fitScale(480, 270)).toBe(2);
     expect(fitScale(960, 540)).toBe(4);
-    expect(fitScale(844, 390)).toBeCloseTo(390 / 135, 5); // 2 would waste 31%: use the fractional fit
+    expect(fitScale(844, 390)).toBe(2); // phone landscape: 480 x 270, letterboxed, crisp
+    expect(fitScale(932, 430)).toBe(3);
     expect(fitScale(720, 405)).toBe(3);
-    for (const [w, h] of [[320, 180], [667, 375], [844, 390], [1024, 768], [200, 100]]) {
+    expect(fitScale(719, 404)).toBe(2);
+    for (const [w, h] of [[320, 180], [667, 375], [844, 390], [1024, 768], [1920, 1080]]) {
       const s = fitScale(w, h);
-      expect(LOGICAL_W * s).toBeLessThanOrEqual(w + 1e-6);
-      expect(LOGICAL_H * s).toBeLessThanOrEqual(h + 1e-6);
+      expect(Number.isInteger(s), `${w}x${h}`).toBe(true);
+      expect(LOGICAL_W * s).toBeLessThanOrEqual(w);
+      expect(LOGICAL_H * s).toBeLessThanOrEqual(h);
     }
+  });
+  it('only a viewport smaller than the canvas gets a fractional scale (it would not fit at all)', () => {
+    expect(fitScale(200, 100)).toBeLessThan(1);
+  });
+  it('scenery is flat bands: no gradients in cards/scenes.ts or the forage art', () => {
+    for (const f of ['src/cards/scenes.ts', 'src/games/forage/art.ts', 'src/games/forage/index.ts']) expect(src(f), f).not.toMatch(/create(Linear|Radial)Gradient/);
   });
 });
 
@@ -61,6 +74,7 @@ describe('captions for the new beats', () => {
     for (const [name, key] of Object.entries(CAPTION)) {
       const text = (en as unknown as Record<string, string>)[key];
       expect(text, name).toBeTruthy();
+      expect((hi as unknown as Record<string, string>)[key], 'hi ' + name).toBeTruthy();
       const words = text.trim().split(/\s+/).length;
       expect(words, key).toBeGreaterThanOrEqual(2);
       expect(words, key).toBeLessThanOrEqual(6);
@@ -78,19 +92,67 @@ describe('captions for the new beats', () => {
   });
 });
 
+describe('Hindi stub has every forage caption and line', () => {
+  it('every forage.* and cc.forage.* key in en.json exists in hi.json', () => {
+    const keys = Object.keys(en).filter((k) => /^(cc\.)?forage\./.test(k));
+    expect(keys.length).toBeGreaterThan(10);
+    for (const k of keys) expect((hi as unknown as Record<string, string>)[k], k).toBeTruthy();
+  });
+});
+
+/** Play a whole round the way the game loop does: trail, full basket with a 6th left, feed, reveal. */
+function play(friend: string, buddy: string | null, route: (typeof ROUTES)[number], useShortcut: boolean): Round {
+  const r = new Round({ ...DEFAULT_ROUND });
+  r.begin(friend, buddy, effectOf(buddy, abilityOf));
+  r.chooseRoute(route);
+  for (let i = 0; i < 40 && r.phase === Ph.Trail; i++) {
+    if (i % 3 === 0) r.bump();
+    if (useShortcut && i === 2) r.takeShortcut();
+    r.offer(); r.pickup();
+  }
+  return r;
+}
+
 describe('no-buddy completion (a buddy gate must never be required)', () => {
-  it('every friend, every route, with bumps and no secret, reaches Reveal with no buddy', () => {
-    for (const friend of WILD_ANIMALS) for (const route of ROUTES) {
-      const r = new Round({ ...DEFAULT_ROUND });
-      r.begin(friend, null, effectOf(null, abilityOf));
-      r.chooseRoute(route);
-      for (let i = 0; i < 40 && r.phase === Ph.Trail; i++) { if (i % 3 === 0) r.bump(); r.pickup(); }
+  it('every v1 friend, every route, with bumps and no secret, reaches Reveal with no buddy', () => {
+    for (const friend of V1_ANIMALS) for (const route of ROUTES) {
+      const r = play(friend, null, route, false);
       expect(r.phase, `${friend}/${route}`).toBe(Ph.Meet);
+      expect(r.takeShortcut()).toBe(false);
       expect(r.feed()).toBe(true);
       expect(r.tick(DEFAULT_ROUND.meetMs)).toBe(true);
       expect(r.phase).toBe(Ph.Reveal);
       expect(r.result().friend).toBe(friend);
+      expect(r.result().shortcut).toBe(false);
     }
+  });
+  it('with a buddy that ignores its shortcut the trail completes just the same; taking it also completes', () => {
+    for (const friend of V1_ANIMALS) for (const buddy of ['elephant', 'monkey'].filter((b) => b !== friend)) for (const route of ROUTES) for (const take of [false, true]) {
+      const r = play(friend, buddy, route, take);
+      expect(r.phase, `${friend}+${buddy}/${route}/${take}`).toBe(Ph.Meet);
+      expect(r.feed()).toBe(true); r.tick(DEFAULT_ROUND.meetMs);
+      expect(r.phase).toBe(Ph.Reveal);
+      expect(r.result().shortcut).toBe(take);
+    }
+  });
+  it('the Meet beat holds until the child feeds, with a 6th food left on the trail', () => {
+    const r = play('elephant', 'monkey', 'high', false);
+    expect(r.phase).toBe(Ph.Meet);
+    r.offer(); // the guaranteed 6th lies on the trail
+    expect(r.pickup()).toBe(false); r.leave();
+    expect(r.tick(120000)).toBe(false);
+    expect(r.phase).toBe(Ph.Meet); expect(r.carried).toBe(5); expect(r.left).toBe(1);
+  });
+});
+
+describe('Card clash is out of v1 (files kept, not reachable)', () => {
+  it('main.ts does not import the clash, farm or house games; home.ts has no clash button', () => {
+    const main = src('src/main.ts'), home = src('src/app/home.ts');
+    for (const g of ['trump', 'farm', 'house']) expect(main, g).not.toMatch(new RegExp(`^import ['"]\\./games/${g}`, 'm'));
+    expect(home).not.toMatch(/games\/trump|clashBtn|ui\.clash/);
+  });
+  it('the clash files still exist for later', () => {
+    expect(src('src/games/trump/index.ts')).toContain("registerGame");
   });
 });
 

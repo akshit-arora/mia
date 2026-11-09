@@ -1,12 +1,11 @@
 // Home screen: a little world with three big picture doors (Jungle, Farm, House) that are the games,
-// a shelf button for the collection and Bholu the truck. No reading needed.
+// a shelf button for the collection and Bholu the truck. (Card clash is out of v1: not imported, no button.) No reading needed.
 import { audio } from '../audio';
 import { t } from '../i18n';
 import { SHELVES, shelfCards, type ShelfId } from '../cards/data';
 import { getStore } from '../cards/progress';
 import { DOOR_H, DOOR_W, INK, SHELF_COL, mk, type Cv } from '../cards/scenes';
-import { clashIcon } from '../games/trump/art';
-import { gameById, gameForShelf } from './registry';
+import { gameForShelf } from './registry';
 import type { App, Screen } from './shell';
 
 const DOOR_X = [0.2, 0.5, 0.8];
@@ -19,8 +18,8 @@ export function homeScreen(app: App): Screen {
   let truckHop = 0;
   const pipCache = new Map<string, Cv>();
   const doorBtns: HTMLButtonElement[] = [];
-  let truckBtn: HTMLButtonElement, shelfBtn: HTMLButtonElement, clashBtn: HTMLButtonElement | null = null;
-  let clashArt: Cv | null = null, handArt: Cv | null = null;
+  let truckBtn: HTMLButtonElement, shelfBtn: HTMLButtonElement;
+  let handArt: Cv | null = null;
   let shelfArt: Cv;
   let off: (() => void) | null = null;
 
@@ -51,7 +50,6 @@ export function homeScreen(app: App): Screen {
     SHELVES.forEach((s, i) => app.place(doorBtns[i], W * DOOR_X[i], DOOR_CY, DOOR_W, DOOR_H));
     app.place(truckBtn, W * 0.4, H - 18, 48, 30);
     app.place(shelfBtn, 30, H - 20, 44, 34);
-    if (clashBtn) app.place(clashBtn, W * 0.58, H - 20, 44, 34);
     shelfArt = kit.shelfButton(ownedShelfIds());
   };
 
@@ -72,12 +70,6 @@ export function homeScreen(app: App): Screen {
       });
       truckBtn = app.hot({ cx: 0, cy: 0, w: 48, h: 30, label: t('ui.truck'), onClick: () => { truckHop = performance.now(); audio.sfx('honk'); stage.invalidate(); } });
       shelfBtn = app.hot({ cx: 0, cy: 0, w: 44, h: 34, label: t('ui.shelves'), onClick: () => { audio.sfx('tick'); app.go('shelves'); } });
-      const clash = gameById('trump');
-      clashBtn = null;
-      if (clash) {
-        clashArt = clashIcon();
-        clashBtn = app.hot({ cx: 0, cy: 0, w: 44, h: 34, label: t('ui.clash'), onClick: () => { audio.sfx('pop'); app.launch(clash); } });
-      }
       handArt = kit.icon('ui.hand', 32); // Twemoji pointing-down hand
       layout();
       off = getStore().onChange(() => { shelfArt = kit.shelfButton(ownedShelfIds()); stage.invalidate(); }); // a card arrived while we were away or behind the reveal
@@ -110,7 +102,6 @@ export function homeScreen(app: App): Screen {
       if (hop < 1) { busy = true; hy = -Math.round(Math.abs(Math.sin(hop * Math.PI * 2)) * 6 * (1 - hop)); } else truckHop = 0;
       g.drawImage(kit.truck(), Math.round(W * 0.4 - 24), H - 33 + hy); // 1
       g.drawImage(shelfArt, 8, H - 37); // 1
-      if (clashArt && clashBtn) g.drawImage(clashArt, Math.round(W * 0.58 - 22), H - 37); // 1
       // first run only: a bobbing hand over the Jungle door, until the first card is earned
       if (handArt && getStore().owned().length === 0) {
         const bob = stage.reduced ? 0 : Math.round(Math.abs(Math.sin(now / 280)) * 4);

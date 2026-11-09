@@ -1,8 +1,10 @@
 // FORAGE TRAIL (Jungle, v1): friend-first.
 //   ASK   pick a hungry friend, then (optionally) a buddy to bring along
 //   TRAIL a three-lane path; a fork picks the route; fill the basket with THAT friend's food. The food behaves its own way
-//   MEET  the friend steps out; one tap feeds it     REVEAL  the quick card reveal, then badges
-// No timers, lives or fail screens: a bump spills one item and the basket wobbles, nothing more. Every trail completes with no buddy.
+//   MEET  basket full (holds 5, the trail offers 6): the friend steps out; the run ends ONLY when the child taps the friend or basket to feed it.
+//         A 6th food can be left on the trail: no penalty, no slowdown.     REVEAL  the quick card reveal, then badges
+// No timers, lives or fail screens: a bump spills one item and the basket wobbles, nothing more. Every trail completes with no buddy;
+// Gajju's trunk and Bunty's climb only add an optional shortcut gate (V1_BRIEF).
 // Draw budget: <= 25 canvas calls per frame, no allocation in the frame loop.
 import { registerGame, type GameApi } from '../../app/registry';
 import { effectOf } from '../../cards/abilities';
@@ -12,19 +14,19 @@ import { setCaptionStyle } from '../../ui/captions';
 import type { Recipe } from '../../audio/recipes';
 import {
   FAR_H, GND_H, basketImages, bushSprite, butterflies, farLayer, flowerSprite, foodBadge, groundLayer, hazardSprites, routeSign,
-  secretSprite, shelfStrip, tile, vectorAnimal, type Biome,
+  secretSprite, shelfStrip, shortcutSprites, tile, vectorAnimal, type Biome,
 } from './art';
 import {
-  BASKET_X, BEHAVIOUR_OF, captionGate, DEFAULT_ROUND, FOODS, LANE_Y, Ph, ROUTE, ROUTES, Round, SNIFF_BONUS_FOOD, foodOf, laneAt, newWaitingMemory,
-  pickBuddies, pickLane, pickWaiting, rollSpawn, secretChance, topFor, type FoodId,
+  BASKET_X, BEHAVIOUR_OF, captionGate, DEFAULT_ROUND, FOODS, LANE_Y, Ph, ROUTE, ROUTES, Round, foodOf, laneAt, newWaitingMemory,
+  pickBuddies, pickLane, pickWaiting, rollSpawn, secretChance, shortcutOf, topFor, V1_ANIMALS, type FoodId,
 } from './logic';
 import { hasVector, POSES, type Pose } from './sprites';
-import { BUDDY, BUMP, CAPTION, FEED, MEET, PICKUP, RUSTLE, SECRET, STING, STREAK } from './sounds';
+import { BUDDY, BUMP, CAPTION, FEED, MEET, PICKUP, RUSTLE, SECRET, SHORTCUT_SFX, STING, STREAK } from './sounds';
 
 const BX = BASKET_X;
 const SPEED = 48; // px per second
 const MAX_CALLS = 25;
-const K_FOOD = 0, K_GIFT = 1, K_HAZARD = 2, K_SECRET = 3;
+const K_FOOD = 0, K_GIFT = 1, K_HAZARD = 2, K_SECRET = 3, K_GATE = 4; // K_GATE: Gajju's high branch / Bunty's vine
 const ITEM_POOL = 10, PART_POOL = 12;
 const SHELF_X = 36, SHELF_Y = 2;
 const PCOL = ['#ffd93d', '#ff7aa8', '#7fe0ff', '#9be564', '#ffffff'];
@@ -58,13 +60,14 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
   const flower = flowerSprite();
   const [thorn, bee] = hazardSprites();
   const secret = secretSprite();
+  const gates = shortcutSprites();
   const badges = icons.map((ic) => foodBadge(ic));
   const signs = ROUTES.map((r) => routeSign(r, 1));
   const signsBig = ROUTES.map((r) => routeSign(r, 1.1));
   const basket = basketImages();
   const bush = bushSprite();
   const fly = butterflies();
-  const WILD = shelfCards('jungle').map((c) => c.id);
+  const WILD = shelfCards('jungle').map((c) => c.id).filter((id) => V1_ANIMALS.includes(id)); // lion and tiger: card data kept, never offered or shown in v1
   let strip = shelfStrip(kit, WILD, api.levelOf);
   const soloTile = tile(basket[0], TILE);
   const soloTileHot = tile(basket[2], TILE, true);
@@ -128,7 +131,7 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
   let lane = 1, basketY = LANE_Y[1];
   let scrollX = 0, speedK = 1, lastNow = 0, blinkT = 3000, hop = 0, wobble = 0, shelfBounce = 0, stickT = 0;
   let friendImgs: HTMLCanvasElement[] = [], buddyImgs: HTMLCanvasElement[] = [];
-  let spawnT = 0, sinceHit = 0, secretT = -1, sniffed = false, meetHello = false;
+  let spawnT = 0, sinceHit = 0, secretT = -1, gateT = -1, meetHello = false;
   let moved = !firstTimer, hintOn = firstTimer, revealing = false, meetStart = false, feedT = 0, enterT = 0;
   let calls = 0, maxCalls = 0, rounds = 0, lastCarried = 0;
   const stats = { frames: 0, drawMs: 0, drawMax: 0, maxCalls: 0, rounds: 0 };
@@ -152,15 +155,18 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
     }
   };
   const setLane = (l: number): void => {
-    if (round.phase !== Ph.Trail) return;
+    if (round.phase !== Ph.Trail && !(round.phase === Ph.Meet && !round.fed)) return;
     if (l < 0) l = 0; else if (l > 2) l = 2;
     if (l === lane) return;
     lane = l; moved = true; hintOn = false; audio.sfx('hop');
   };
-  const spawn = (kind: number, l: number, sub = 0, dx = 0): void => {
+  /** `fixed` keeps a food in its lane (shortcut patterns and the 6th food do not bounce away). */
+  const spawn = (kind: number, l: number, sub = 0, dx = 0, fixed = false): void => {
     for (let i = 0; i < items.length; i++) {
       const it = items[i]; if (it.on) continue;
-      it.on = true; it.x = stage.W + 18 + dx; it.lane = l; it.kind = kind; it.sub = sub; it.hopped = false; it.ph = Math.random() * 6; return;
+      it.on = true; it.x = stage.W + 18 + dx; it.lane = l; it.kind = kind; it.sub = sub; it.hopped = fixed; it.ph = Math.random() * 6;
+      if (kind === K_FOOD) round.offer();
+      return;
     }
   };
   const clearItems = (): void => { for (let i = 0; i < items.length; i++) items[i].on = false; };
@@ -184,7 +190,7 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
     friendImgs = POSES.map((p) => animalImg(pickedFriend, ANIMAL_PX, p)); // resolved once per run: the frame loop never builds keys
     buddyImgs = buddy ? POSES.map((p) => animalImg(buddy, BUDDY_PX, p)) : [];
     farCur = foodOf(pickedFriend) as Biome; far(farCur);
-    clearItems(); sign.on = false; sign.done = false; speedK = 1; spawnT = -600; sinceHit = 0; secretT = -1; sniffed = false;
+    clearItems(); sign.on = false; sign.done = false; speedK = 1; spawnT = -600; sinceHit = 0; secretT = -1; gateT = -1;
     meetStart = false; feedT = 0; lastCarried = 0; stickT = 0;
     lane = 1; basketY = LANE_Y[1]; rounds++; stats.rounds = rounds;
     cue(STING[round.food], CAPTION.sting);
@@ -196,7 +202,7 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
     if (askStep === 0) {
       pickedFriend = list[i]; audio.animal(pickedFriend); audio.sfx('pop'); burst(tileX(i, list.length), tileY(), 6);
       owned();
-      buddyOffers = pickBuddies(ownedSet, pickedFriend, mem, Math.random);
+      buddyOffers = pickBuddies(pickedFriend, mem, Math.random);
       mem.lastFriend = pickedFriend;
       if (!buddyOffers.length) { begin(null); return; }
       askStep = 1; hot = -1; api.caption('forage.buddy', 3000);
@@ -238,12 +244,19 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
           it.on = false; sinceHit = 0;
           if (it.kind === K_FOOD) {
             hop = 160; burst(BX + 8, LANE_Y[lane] - 6, 3);
-            round.pickup(); const c = round.carried;
+            if (!round.pickup()) continue;
+            const c = round.carried;
             cue(PICKUP[round.food][(c - 1) % 5], CAPTION.pickup, 2500);
-            if (BEHAVIOUR_OF[round.food] === 'sticky' && round.effect !== 'fan') { stickT = 650; }
+            if (BEHAVIOUR_OF[round.food] === 'sticky') { stickT = 650; }
             if (c % 3 === 0 && c < round.opts.need) { cue(STREAK, CAPTION.streak); burst(BX + 8, LANE_Y[lane] - 14, 8); }
           } else if (it.kind === K_GIFT) {
             hop = 160; burst(BX + 8, LANE_Y[lane] - 6, 5); audio.sfx('sparkle');
+          } else if (it.kind === K_GATE) { // the buddy's optional shortcut: lay down a pattern the other trails never have
+            const def = shortcutOf(round.effect);
+            if (def && round.takeShortcut()) {
+              hop = 220; burst(BX + 8, LANE_Y[lane] - 12, 10); cue(SHORTCUT_SFX, CAPTION.shortcut, 600);
+              for (const p of def.pattern) spawn(K_FOOD, p.lane, 0, p.dx, true);
+            }
           } else if (it.kind === K_SECRET) {
             round.findSecret(); burst(BX + 8, LANE_Y[lane] - 12, 12); cue(SECRET, CAPTION.secret, 600);
           } else { // hazard: a funny wobble, a spill, nothing lost for good
@@ -254,7 +267,7 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
       if (round.phase === Ph.Trail) {
         // the fork
         if (!sign.done && !sign.on && round.t >= round.opts.forkAt) {
-          sign.on = true; sign.x = stage.W + 30; sniffed = false;
+          sign.on = true; sign.x = stage.W + 30;
           if (firstTimer && rounds === 1) { moved = false; hintOn = true; }
         }
         if (sign.on) {
@@ -263,10 +276,11 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
             sign.on = false; sign.done = true;
             round.chooseRoute(ROUTES[lane]); hop = 220; burst(BX + 8, LANE_Y[lane] - 6, 7);
             secretT = Math.random() < secretChance(round.route, round.effect) ? 2500 + Math.random() * 2000 : -1;
-            if (round.effect === 'sniff' && !sniffed) { sniffed = true; for (let k = 0; k < SNIFF_BONUS_FOOD; k++) spawn(K_FOOD, pickLane(lane, Math.random), 0, k * 46); }
+            gateT = shortcutOf(round.effect) ? 1400 : -1;
             spawnT = -700;
           }
         }
+        if (gateT >= 0) { gateT -= dt; if (gateT < 0) { const def = shortcutOf(round.effect); if (def) spawn(K_GATE, def.gateLane); gateT = -1; } }
         if (secretT >= 0) { secretT -= dt; if (secretT < 0) { spawn(K_SECRET, pickLane(lane, Math.random)); secretT = -1; } }
         // spawns: wanted food, gifts, hazards, as the route says. Never allocate here
         spawnT += dt; sinceHit += dt;
@@ -286,10 +300,23 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
       }
     }
     if (round.phase === Ph.Meet) {
-      if (!meetStart) { meetStart = true; meetHello = false; clearItems(); sign.on = false; enterT = 0; hop = 200; hintOn = false; cue(RUSTLE, CAPTION.rustle); api.caption('forage.look', 3000); }
+      if (!meetStart) {
+        meetStart = true; meetHello = false; sign.on = false; enterT = 0; hop = 200; hintOn = false; cue(RUSTLE, CAPTION.rustle); api.caption('forage.look', 3000);
+        // basket full: only wanted food stays on the trail. Make sure a 6th is there to be left (a choice, never a penalty)
+        let foods = 0;
+        for (let i = 0; i < items.length; i++) { const it = items[i]; if (!it.on) continue; if (it.kind === K_FOOD) { foods++; it.sub = 0; } else it.on = false; }
+        for (let k = 0, owe = Math.max(round.owesFood(), foods ? 0 : 1); k < owe; k++) spawn(K_FOOD, (lane + 1 + ((Math.random() * 2) | 0)) % 3, 0, k * 40, true);
+      }
+      // food still drifting by is left where it is: counted, never punished
+      for (let i = 0; i < items.length; i++) {
+        const it = items[i]; if (!it.on) continue;
+        it.x -= (sp * dt) / 1000;
+        if (it.x < -20) it.on = false;
+        else if (it.sub === 0 && it.x < BX - 18) { it.sub = 1; round.leave(); }
+      }
       enterT += dt;
       if (!meetHello && enterT >= 650) { meetHello = true; cue(MEET, CAPTION.meet); }
-      speedK = Math.max(0.1, speedK - dt / 600);
+      speedK = Math.max(0.5, speedK - dt / 600); // the world eases, the basket does not
       if (round.fed) feedT += dt;
     }
     if (round.tick(dt) && round.phase === Ph.Reveal && !revealing) {
@@ -314,7 +341,7 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
     return n;
   };
   const itemImg = (it: Item): HTMLCanvasElement =>
-    it.kind === K_FOOD ? icons[FOODS.indexOf(round.food as FoodId)] : it.kind === K_GIFT ? (it.sub ? flower : sparkIcon) : it.kind === K_SECRET ? secret : it.sub ? bee : thorn;
+    it.kind === K_FOOD ? icons[FOODS.indexOf(round.food as FoodId)] : it.kind === K_GATE ? gates[round.effect === 'trunk' ? 0 : 1] : it.kind === K_GIFT ? (it.sub ? flower : sparkIcon) : it.kind === K_SECRET ? secret : it.sub ? bee : thorn;
 
   const render = (g: CanvasRenderingContext2D, now: number): void => {
     const W = stage.W;
@@ -369,7 +396,7 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
       g.drawImage(bush, W - 44, LANE_Y[1] - 30); n++;
       const fx = Math.round(W - 90 + (1 - k) * 60), fy = LANE_Y[1] - 38 + (round.fed ? -Math.round(Math.abs(Math.sin(feedT / 90)) * 4) : 0);
       g.drawImage(friendImgs[round.fed ? 1 : 0], fx, fy); n++;
-      if (!round.fed && k >= 1 && !stage.reduced) { // pulse the friend, not an arrow: "feed me"
+      if (!round.fed && k >= 1 && !stage.reduced && firstTimer && rounds === 1) { // run one only: pulse the friend. After that nothing glows (brief criteria 1 and 8)
         const o = Math.round(Math.abs(Math.sin(now / 280)) * 3);
         g.drawImage(icons[FOODS.indexOf(round.food)], fx + 8, fy - 24 - o, 24, 24); n++;
       }
@@ -394,7 +421,7 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
     // HUD
     const sb = shelfBounce > 0 && !stage.reduced ? -Math.round(Math.sin((shelfBounce / 500) * 3.14) * 3) : 0;
     g.drawImage(strip, SHELF_X, SHELF_Y + sb); n++;
-    if (ph === Ph.Trail) {
+    if (ph === Ph.Trail || ph === Ph.Meet) {
       g.drawImage(badges[FOODS.indexOf(round.food)], W - 34 - hudW, 2); n++;
       g.fillStyle = '#181020'; g.fillRect(W - 38 - hudW, 33, 38, 5);
       g.fillStyle = '#ffd93d'; g.fillRect(W - 37 - hudW, 34, Math.round((36 * round.carried) / round.opts.need), 3); n += 2;
@@ -457,15 +484,23 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
     try { container.setPointerCapture(e.pointerId); } catch { /* ignore */ }
     const p = logical(e);
     if (round.phase === Ph.Ask) { hot = tileAt(p.x, p.y); if (hot >= 0) pickTile(hot); return; }
-    if (round.phase === Ph.Meet) { doFeed(); return; }
+    if (round.phase === Ph.Meet) { if (round.fed) return; if (onFeeder(p.x, p.y)) doFeed(); else { downY = p.y; swiped = false; setLane(laneAt(downY)); } return; }
     downY = p.y; swiped = false;
     setLane(laneAt(downY));
+  };
+  /** The friend or the basket: either is a feed tap (at least 48 device px wide, whatever the scale). */
+  const onFeeder = (x: number, y: number): boolean => {
+    const pad = Math.max(0, 24 / stage.scale - 14);
+    const fx = stage.W - 90, fy = LANE_Y[1] - 38;
+    const onFriend = x >= fx - 6 - pad && x <= fx + ANIMAL_PX + 8 + pad && y >= fy - 26 - pad && y <= fy + ANIMAL_PX + 6 + pad;
+    const onBasket = Math.abs(x - BX) <= 24 + pad && Math.abs(y - basketY) <= 22 + pad;
+    return onFriend || onBasket;
   };
   const onMove = (e: PointerEvent): void => {
     if (e.target !== container || api.isRevealing()) return;
     const p = logical(e);
     if (round.phase === Ph.Ask) { hot = tileAt(p.x, p.y); return; }
-    if (swiped || e.buttons === 0 || round.phase !== Ph.Trail) return;
+    if (swiped || e.buttons === 0 || (round.phase !== Ph.Trail && round.phase !== Ph.Meet)) return;
     if (p.y - downY < -12) { swiped = true; setLane(lane - 1); } else if (p.y - downY > 12) { swiped = true; setLane(lane + 1); }
   };
   container.addEventListener('pointerdown', onDown);
@@ -476,7 +511,8 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
       if (e.key === '1' || e.key === '2' || e.key === '3' || e.key === '4') { pickTile(+e.key - 1); e.preventDefault(); }
       return;
     }
-    if (round.phase === Ph.Meet) { if (e.key === ' ' || e.key === 'Enter') { doFeed(); e.preventDefault(); } return; }
+    if (round.phase === Ph.Meet && (e.key === ' ' || e.key === 'Enter')) { doFeed(); e.preventDefault(); return; }
+    if (round.phase === Ph.Meet && round.fed) return;
     if (e.key === 'ArrowUp' || e.key === 'w') { setLane(lane - 1); e.preventDefault(); }
     else if (e.key === 'ArrowDown' || e.key === 's') { setLane(lane + 1); e.preventDefault(); }
     else if (e.key === '1' || e.key === '2' || e.key === '3') setLane(+e.key - 1);
@@ -489,13 +525,19 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
     const w = window as unknown as Record<string, unknown>;
     w.__forage = {
       stats, round, items, mem,
-      get state() { return { phase: round.phase, t: round.t, carried: round.carried, food: round.food, friend: round.friend, buddy: round.buddy, route: round.route, lane, rounds, calls, maxCalls, realMax, bumps: round.bumps, secret: round.secretFound, owned: api.owned() }; },
+      get state() { return { phase: round.phase, t: round.t, carried: round.carried, food: round.food, friend: round.friend, buddy: round.buddy, route: round.route, lane, rounds, calls, maxCalls, realMax, bumps: round.bumps, secret: round.secretFound, shortcut: round.shortcut, left: round.left, offered: round.offered, effect: round.effect, fed: round.fed, owned: api.owned() }; },
       setLane, pickTile,
       /** start a trail for an animal and optional buddy */
       go(friend: string, buddy: string | null = null) { pickedFriend = friend; begin(buddy); return true; },
       /** fill the basket: jump to the Meet beat */
       fill() { for (let i = 0; i < round.opts.need; i++) round.pickup(); },
       feed() { return doFeed(); },
+      /** run the simulation for `ms` of game time in small steps (the dev pane draws at ~1 fps) */
+      sim(ms: number, step = 33) { for (let t = 0; t < ms; t += step) update(step); stage.invalidate(); },
+      /** steer the basket into the first on-screen item of a kind (0 food, 4 gate...) so a run can be driven without a finger */
+      aim(kind: number) { const it = items.filter((i) => i.on && i.kind === kind).sort((x, y) => x.x - y.x)[0]; if (it) setLane(it.lane); return !!it; },
+      /** jump to the fork so the route, and the buddy's shortcut gate, arrive without waiting */
+      fork() { round.t = Math.max(round.t, round.opts.forkAt); },
     };
   }
 

@@ -15,7 +15,11 @@ export function mk(w: number, h: number): [Cv, G] {
   return [c, g];
 }
 export const disc = (g: G, x: number, y: number, r: number, col: string): void => { g.fillStyle = col; g.beginPath(); g.arc(x, y, r, 0, 6.2832); g.fill(); };
-const grad = (g: G, y0: number, y1: number, a: string, b: string): CanvasGradient => { const q = g.createLinearGradient(0, y0, 0, y1); q.addColorStop(0, a); q.addColorStop(1, b); return q; };
+/** Flat horizontal bands from y0 to y1 (ART_BIBLE: no gradients). One solid colour per band, drawn top to bottom. */
+const bands = (g: G, y0: number, y1: number, w: number, cols: readonly string[]): void => {
+  const bh = (y1 - y0) / cols.length;
+  cols.forEach((c, i) => { g.fillStyle = c; g.fillRect(0, Math.round(y0 + i * bh), w, Math.round(y0 + (i + 1) * bh) - Math.round(y0 + i * bh)); });
+};
 
 function tree(g: G, x: number, top: number, trunkH: number, s = 1): void {
   g.fillStyle = INK; g.fillRect(x - 4 * s, top, 9 * s, trunkH);
@@ -26,7 +30,7 @@ function tree(g: G, x: number, top: number, trunkH: number, s = 1): void {
 
 export function jungleScene(W: number, H: number): Cv {
   const [c, g] = mk(W, H);
-  g.fillStyle = grad(g, 0, 90, '#2f7a3f', '#8fd18a'); g.fillRect(0, 0, W, 90);
+  bands(g, 0, 90, W, ['#2f7a3f', '#4a9a52', '#6fb872', '#8fd18a']);
   for (let i = 0; i < W / 28; i++) disc(g, i * 28 + (i % 3) * 5, 80, 16 + (i % 4) * 4, '#5cae62');
   g.fillStyle = '#4fae4f'; g.fillRect(0, 84, W, H - 84);
   g.fillStyle = '#e3b878'; g.beginPath(); g.ellipse(W * 0.45, H - 18, W * 0.5, 22, 0, 0, 6.2832); g.fill();
@@ -39,7 +43,7 @@ export function jungleScene(W: number, H: number): Cv {
 
 export function farmScene(W: number, H: number, icon: (id: string, size: number) => Cv): Cv {
   const [c, g] = mk(W, H);
-  g.fillStyle = grad(g, 0, 80, '#7ad1ff', '#dff4ff'); g.fillRect(0, 0, W, 90);
+  bands(g, 0, 90, W, ['#7ad1ff', '#a6e0ff', '#c9ecff', '#dff4ff']);
   disc(g, 36, 22, 11, '#ffe066'); disc(g, 36, 22, 8, '#ffd93d');
   g.fillStyle = '#ffffff'; g.fillRect(90, 18, 24, 5); g.fillRect(96, 14, 14, 5); g.fillRect(180, 26, 26, 5); g.fillRect(186, 22, 14, 5);
   for (let i = 0; i < W / 40 + 1; i++) disc(g, i * 40, 88, 24, i % 2 ? '#6fcf6a' : '#5cbf5c');
@@ -82,7 +86,7 @@ export function sceneFor(shelf: ShelfId, W: number, H: number, icon: (id: string
 /** The home screen world: sky, hills, a path; the three doors are separate sprites. */
 export function worldScene(W: number, H: number): Cv {
   const [c, g] = mk(W, H);
-  g.fillStyle = grad(g, 0, 100, '#5cc4ff', '#e6f7ff'); g.fillRect(0, 0, W, 100);
+  bands(g, 0, 100, W, ['#5cc4ff', '#8ad8ff', '#b8e8ff', '#e6f7ff']);
   disc(g, W - 34, 24, 13, '#ffe066'); disc(g, W - 34, 24, 10, '#ffd93d');
   g.fillStyle = '#ffffff';
   for (const [x, y] of [[26, 14], [W * 0.45, 10], [W * 0.7, 30]]) { g.fillRect(x, y, 26, 6); g.fillRect(x + 6, y - 4, 14, 5); }
