@@ -110,7 +110,7 @@ export function installReveal(app: App): void {
       at(T.shelf + 650, () => { void audio.say('card.went.' + card.shelf, 'bholu'); });
       at(T.shelf + (reduced ? 200 : 1250), () => { banner.hidden = false; audio.sfx('chime'); burst(40, stage.H - 34, 8); });
     } else {
-      at(T.shelf, () => { if (res.leveledUp) { void audio.say('card.star', 'bholu'); audio.sfx('sparkle'); } else audio.sfx('tick'); burst(stage.W * 0.45 + 66, stage.H * 0.72 - 50, 8); });
+      at(T.shelf, () => { audio.sfx('tick'); burst(stage.W * 0.45 + 66, stage.H * 0.72 - 50, 8); });
     }
     let ei = 0;
 
@@ -218,8 +218,7 @@ export function installReveal(app: App): void {
         } else {
           const cw = Math.round(40 * ease(sk / 250));
           if (cw > 1) g.drawImage(kit.cardThumb(id, level, 40), Math.round(cx0 - cw / 2), Math.round(cy0 - cw / 2), cw, cw); // 1
-          const sp = reduced ? 1 : ease((sk - 300) / 300);
-          if (sp > 0 && level > 1) { const s = Math.round(24 * sp + (reduced ? 0 : Math.sin(sk / 120) * 2)); g.drawImage(kit.icon('ui.star', 32), Math.round(cx0 + 20 - s / 2), Math.round(cy0 - 20 - s / 2), s, s); } // 1
+          // Level-up star pip hidden in v1 per contract
         }
       }
       // particles last, capped so the frame never passes 24 calls

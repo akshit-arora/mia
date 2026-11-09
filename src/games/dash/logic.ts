@@ -407,7 +407,6 @@ export class DashRound {
   result(): DashResult {
     const badges: BadgeId[] = [];
     if (this.stumbles === 0) badges.push('clean'); // clean: no stumbles
-    if (this.spills === 0) badges.push('full'); // full: nothing spilled
     if (this.secretFound) badges.push('secret');
     return { friend: this.friend, food: this.food, carried: this.carried, capacity: this.opts.need, stumbles: this.stumbles, spills: this.spills, left: this.left, secretFound: this.secretFound, badges };
   }

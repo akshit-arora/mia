@@ -3,7 +3,7 @@
 // The loop is friend-first. The child picks a waiting animal, then a route, then fills the basket
 // with that animal's own food. Bumps spill food but never end the run. The basket holds 5 while the
 // trail offers 6: once it is full the run ends ONLY when the child chooses to feed (a tap on the
-// friend or the basket); a 6th food left on the trail costs nothing. Three optional badges record how it went.
+// friend or the basket); a 6th food left on the trail costs nothing. Two optional badges (clean, secret) record how it went.
 import type { BuddyEffect } from '../../cards/abilities';
 
 export type Rng = () => number;
@@ -136,8 +136,8 @@ export interface RoundOpts {
 }
 export const DEFAULT_ROUND: RoundOpts = { need: 5, offer: 6, capacity: 5, forkAt: 6500, meetMs: 1200 };
 
-export type BadgeId = 'clean' | 'full' | 'secret';
-export const BADGES: readonly BadgeId[] = ['clean', 'full', 'secret'];
+export type BadgeId = 'clean' | 'secret';
+export const BADGES: readonly BadgeId[] = ['clean', 'secret'];
 
 export interface RunResult {
   friend: string;
@@ -255,7 +255,6 @@ export class Round {
   result(): RunResult {
     const badges: BadgeId[] = [];
     if (this.bumps === 0) badges.push('clean');
-    if (this.spills === 0) badges.push('full');
     if (this.secretFound) badges.push('secret');
     return {
       friend: this.friend, food: this.food, route: this.route, carried: this.carried,

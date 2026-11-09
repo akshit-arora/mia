@@ -1,6 +1,11 @@
 # V1 Brief — Jungle + Buddies
 
-Status: v1, 2026-11-07. Scope contract; rationale in `REDESIGN.md`. Not listed here = not in v1.
+Status: v1, 2026-11-07 (updated 2026-11-09). Scope contract; rationale in `REDESIGN.md`. Not listed here = not in v1.
+
+### Changelog
+- **2026-11-09**: Reworded acceptance criterion 3 to "Food behaviour is visible: the friend's food changes how the trail plays (honey drags with bees, fruit bounces and must be chased, sugarcane is heavy, seeds scatter) and the child reacts." (owner-approved brief edit aligning with friend-first loop).
+- **2026-11-09**: Updated In-scope table Build row from "day + rain" to "day only; rain deferred" (rain remains deferred to protect v1 release quality).
+- **2026-11-09**: Updated build order step 4 to reflect rain deferred.
 
 ## Promise
 
@@ -14,7 +19,7 @@ Status: v1, 2026-11-07. Scope contract; rationale in `REDESIGN.md`. Not listed h
 | Loop | Ask → food → trail → meet → card → shelf, ~90 s. Basket holds 5, trail offers 6 — leaving something is a decision, never a penalty |
 | Food behaviours | Honey sticky, fruit bounces, sugarcane heavy, seeds scatter |
 | Buddies | Pick 1 before a trail. Gajju trunk (high shortcut), Bunty climb (vine shortcut). 1 badge + 1 secret; no card levels |
-| Build | One biome, day + rain. Flat vector per `ART_BIBLE.md`, fixed 240×135, letterboxed. Captions for every sound |
+| Build | One biome, day only; rain deferred. Flat vector per `ART_BIBLE.md`, fixed 240×135, letterboxed. Captions for every sound |
 
 ## Out of scope (cut, not "later this pass")
 
@@ -26,7 +31,7 @@ Watch a child do these. If it needs explaining, it failed.
 
 1. **Starts alone.** No adult words; the basket moves within 10 s. No glow, arrow or hand after run one.
 2. **Picks a buddy** with one tap before the trail, and can point to who came. The same trail with a different buddy plays differently — a new route or a secret — and they name what the buddy did.
-3. **Food choice is visible.** Picking one of three foods changes the trail — honey drags with bees, fruit bounces and must be chased — and the child reacts.
+3. **Food behaviour is visible.** The friend's food changes how the trail plays (honey drags with bees, fruit bounces and must be chased, sugarcane is heavy, seeds scatter) and the child reacts. *(owner-approved brief edit)*
 4. **Chooses what to carry.** Fills the basket to 5 with a 6th thing on screen, leaves it, and is not punished or slowed.
 5. **A mistake is funny.** Bumps or spills, laughs or shrugs, keeps playing. No fail screen, timer or lost card.
 6. **Feeds the friend** in one input; the body explains (trunk up the branch, teeth on the meal); the card stamps in ~3 s.
@@ -51,7 +56,7 @@ Each step ends playable, not on a branch.
 1. Friend-first + capacity + food behaviours (bear, one trail)
 2. Meet + 3-second card stamp
 3. Buddy pick + 2 abilities + optional shortcut
-4. Animals 2 and 3, second behaviour, rain variant
+4. Animals 2 and 3, second behaviour (rain deferred)
 5. Art pass: palette, fixed 240×135, flat vector, silhouettes
 6. Badge + secret + captions + sfx + phone test
 

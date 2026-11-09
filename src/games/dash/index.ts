@@ -3,7 +3,7 @@
 //   RUN    the world scrolls, the animal stays put. Tap = HOP over low things, hold or swipe down = DUCK under high things.
 //          Floating food: ONLY this animal's own food counts (seeds / grass / leaves). Other foods pass harmlessly.
 //   MEET   basket full (holds 5): the animal stops, happy, with the basket beside it. The run ends ONLY when the child taps the animal or basket to feed.
-//   REVEAL the quick card reveal, then badges (clean = no stumbles, full = no spills, secret = the golden star), then back to Ask.
+//   REVEAL the quick card reveal, then badges (clean = no stumbles, secret = the golden star), then back to Ask.
 // No timer, lives or fail screen: a hit is a funny stumble that drops at most one carried item. Draw budget: ~25 canvas calls per frame, no allocation in the frame loop.
 import { registerGame, type GameApi } from '../../app/registry';
 import { getBadgeStore } from '../../cards/badges';

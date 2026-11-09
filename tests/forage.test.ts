@@ -154,7 +154,7 @@ describe('round state machine', () => {
     r.tick(DEFAULT_ROUND.meetMs);
     expect(r.phase).toBe(Ph.Reveal);
     const res = r.result();
-    expect(res.carried).toBe(5); expect(res.left).toBe(1); expect(res.badges).toContain('clean'); expect(res.badges).toContain('full');
+    expect(res.carried).toBe(5); expect(res.left).toBe(1); expect(res.badges).toContain('clean');
   });
   it('feed does nothing before the basket is full', () => {
     const r = start(); r.pickup(2);
@@ -187,7 +187,7 @@ describe('round state machine', () => {
     const r = start(); r.pickup(); r.bump(); r.findSecret();
     for (let i = 0; i < 5; i++) r.pickup();
     const b = r.result().badges;
-    expect(b).toContain('secret'); expect(b).not.toContain('clean'); expect(b).not.toContain('full');
+    expect(b).toContain('secret'); expect(b).not.toContain('clean');
   });
 });
 

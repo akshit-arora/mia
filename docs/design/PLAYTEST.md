@@ -46,3 +46,12 @@ If **2 or more** children wait for a glow, or play one run and wander: **stop ad
 
 ## After each child (2 min)
 Note verbatim quotes, the exact moment of any hesitation, and what the child said about the buddy. Reset the profile. Do not change the build between children; change only after all five.
+
+## Device checks (facilitator protocol before testing)
+1. **Viewport & Scale:** Verify on target device in landscape orientation. Check at 1x (667×375) and 2x (844×390). Verify stage uses integer scale, letterboxed neatly with crisp canvas art.
+2. **Touch Targets:** Verify all interactive buttons (Ask tiles, route signs, feed targets, back buttons) meet the minimum 48×48 px physical touch footprint.
+3. **Reduced Motion:** Toggle system `prefers-reduced-motion` in accessibility settings; confirm smooth gameplay without jarring screen shakes, screen pulses, or particle explosions.
+4. **Audible Sound & Captions:** Verify sound recipes play without clipping, crackle, or silence. Verify that captions (`#cc`) appear synchronously with every audio event, readable against the background, with 2–6 words.
+5. **Draw Budget:** Open `?debug` mode and observe `state.maxCalls` / frame call counter; ensure rendering stays <= 25 calls per frame.
+6. **Clean Reset:** Between participants, clear `localStorage.removeItem('mia.cards.v1')` and `localStorage.removeItem('mia.badges.v1')` (or open a fresh incognito tab without `?unlock=all` or `?debug`).
+

@@ -132,12 +132,7 @@ export function cardScreen(app: App): Screen {
         g.fillStyle = p < (v as number) ? STAT_COL[k as StatKind] : '#e6e8f2'; g.fillRect(x0 + 21 + p * pw, y + 1, pw - 1, 14);
       }
     });
-    // stars: level - 1 filled
-    for (let i = 0; i < MAX_LEVEL - 1; i++) {
-      g.globalAlpha = i < level - 1 ? 1 : 0.22;
-      g.drawImage(kit.icon('ui.star', 32), 0, 0, 32, 32, x0 + i * 20, 58, 18, 18);
-    }
-    g.globalAlpha = 1;
+    // In v1, card levels 2-4 and star grind UI are hidden from child-facing screens.
     // speaker button art
     g.fillStyle = INK; g.fillRect(x0, 80, 44, 24); g.fillStyle = '#ffd93d'; g.fillRect(x0 + 1, 81, 42, 22);
     g.fillStyle = INK; g.fillRect(x0 + 8, 88, 5, 8); g.beginPath(); g.moveTo(x0 + 13, 88); g.lineTo(x0 + 20, 83); g.lineTo(x0 + 20, 101); g.lineTo(x0 + 13, 96); g.fill();
@@ -182,7 +177,6 @@ export function cardScreen(app: App): Screen {
       app.ui.appendChild(nameEl);
       const st = document.createElement('ul'); st.className = 'sr';
       for (const [k, v] of Object.entries(card.stats)) { const li = document.createElement('li'); li.textContent = `${t('stat.' + k)}: ${v} ${t('stat.of')}`; st.appendChild(li); }
-      const sl = document.createElement('li'); sl.textContent = `${t('card.stars')}: ${level - 1}`; st.appendChild(sl);
       app.ui.appendChild(st);
       build(); layout();
       els[1].focus({ preventScroll: true });

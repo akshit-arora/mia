@@ -29,7 +29,7 @@ const MAX_CALLS = 25;
 const K_FOOD = 0, K_GIFT = 1, K_HAZARD = 2, K_SECRET = 3, K_GATE = 4; // K_GATE: Gajju's high branch / Bunty's vine
 const ITEM_POOL = 10, PART_POOL = 12;
 const SHELF_X = 36, SHELF_Y = 2;
-const PCOL = ['#ffd93d', '#ff7aa8', '#7fe0ff', '#9be564', '#ffffff'];
+const PCOL = ['#FFC93C', '#E8654A', '#86D7F2', '#7BD389', '#FFFFFF']; // SUN, CORAL, SKY, LEAF_L, WHITE from ART_BIBLE
 const TILE = 52;
 const ANIMAL_PX = 40, BUDDY_PX = 24; // sprite sizes on the tile / trail, and the buddy riding the basket
 
@@ -424,7 +424,7 @@ function startForage(container: HTMLElement, api: GameApi): () => void {
     if (ph === Ph.Trail || ph === Ph.Meet) {
       g.drawImage(badges[FOODS.indexOf(round.food)], W - 34 - hudW, 2); n++;
       g.fillStyle = '#181020'; g.fillRect(W - 38 - hudW, 33, 38, 5);
-      g.fillStyle = '#ffd93d'; g.fillRect(W - 37 - hudW, 34, Math.round((36 * round.carried) / round.opts.need), 3); n += 2;
+      g.fillStyle = '#FFC93C'; g.fillRect(W - 37 - hudW, 34, Math.round((36 * round.carried) / round.opts.need), 3); n += 2;
     }
     for (let i = 0; i < parts.length && n < MAX_CALLS; i++) {
       const p = parts[i]; if (p.life <= 0) continue;

@@ -86,11 +86,7 @@ export function createKit(stage: Stage, atlas: Atlas, cardAtlas: Atlas): Kit {
       const a = Math.round(size * 0.66);
       g.imageSmoothingEnabled = true; g.drawImage(kit.animal(id, 32), Math.round((size - a) / 2), 3 + Math.round((size - 6 - a) / 2) - 1, a, a);
       g.imageSmoothingEnabled = true;
-      const stars = Math.max(0, level - 1);
-      for (let i = 0; i < stars; i++) { // star pips along the bottom edge
-        const sx = Math.round(size / 2 - (stars * 5) / 2 + i * 5 + 1);
-        g.fillStyle = INK; g.fillRect(sx - 1, size - 7, 5, 5); g.fillStyle = '#ffd93d'; g.fillRect(sx, size - 6, 3, 3);
-      }
+      // In v1, card levels 2-4 and star pips are hidden from child-facing UI.
       thumbCache.set(key, cv);
       return cv;
     },

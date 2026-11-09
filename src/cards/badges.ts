@@ -1,11 +1,11 @@
 // Trail badges: a small, persistent record of HOW a child played, not whether they won.
-// Every run earns a card; badges are the optional mastery layer (clean / full / secret).
+// Every run earns a card; badges are the optional mastery layer (clean / secret; the brief ships one badge plus one secret).
 // Pure logic (no DOM). Storage is injected; a blocked localStorage falls back to memory so
 // the game never stops. Key `mia.badges.v1`; cards stay in `mia.cards.v1`.
 import { ANIMAL_IDS } from './data';
 
 export const BADGE_STORE_KEY = 'mia.badges.v1';
-export const BADGE_IDS = ['clean', 'full', 'secret'] as const;
+export const BADGE_IDS = ['clean', 'secret'] as const;
 export type BadgeId = (typeof BADGE_IDS)[number];
 export type BadgeMap = Record<string, BadgeId[]>;
 

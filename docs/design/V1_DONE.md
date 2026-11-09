@@ -68,32 +68,39 @@ Brief: steps 1-3, 5, captions, 3 animals; four things: food choice that changes 
 
 Product-owner decision: **the brief is the contract**. Sections 1-4 above are the original review and are kept for history; the tables below supersede them. "Code" = implemented and covered by `npm test` or a browser run; "Human" = still needs a child at a phone.
 
+### Decisions Log (2026-11-09)
+1. **Criterion 3 Reworded:** Brief updated with owner approval: "Food behaviour is visible: the friend's food changes how the trail plays (honey drags with bees, fruit bounces and must be chased, sugarcane is heavy, seeds scatter) and the child reacts." Matches friend-first architecture.
+2. **Badges Cut to Brief:** Cut to 1 badge (`clean` = no stumbles/bumps) plus the `secret` star. Removed `full` badge across forage and dash logic, index, and tests. Legacy storage with `full` is safely dropped without error (tested in `tests/v1-sanity.test.ts`).
+3. **Card Levels 2–4 Hidden:** Hidden star grinds, level pips, and level-up bursts from child-facing UI (`shelves.ts`, `reveal.ts`, `kit.ts`). Progress logic and underlying data remain intact.
+4. **Rain Variant Formally Deferred:** Brief In-scope table updated from "day + rain" to "day only; rain deferred".
+5. **Palette Audit:** Forage `PCOL` mapped strictly to `ART_BIBLE` tokens (`SUN`, `CORAL`, `SKY`, `LEAF_L`, `WHITE`). Automated grep test in `tests/v1-sanity.test.ts` guarantees no `globalAlpha`, `shadowBlur`, `createLinearGradient`, or `#000` in forage or cards.
+
 ### Contradictions
 
 | # | Result | Evidence |
 |---|---|---|
 | C1 6 animals | DONE | `V1_ANIMALS` (bear, monkey, elephant, peacock) drives `pickWaiting`, the Ask board and the shelf strip. Lion/tiger card data is untouched, not offered. Giraffe absent (`forage-v1.test.ts`). |
-| C2 6 buddies / 3 badges | DONE (buddies); PARTIAL (badges) | `EFFECT_OF` yields only `trunk` (elephant) and `climb` (monkey); roar/pounce/sniff/fan map to `none` and their trail code is removed. The 3 badges (clean/full/secret) are unchanged: the brief says "1 badge + 1 secret", which is not enforced. |
+| C2 6 buddies / 3 badges | DONE | `EFFECT_OF` yields only `trunk` (elephant) and `climb` (monkey); badges cut strictly to `clean` and `secret`. `full` removed everywhere; legacy parser drops unknown badges cleanly (tested). |
 | C3 basket 5 / offers 6 | DONE (code) | `RoundOpts.offer = 6`; `pickup()` returns false when full; the run waits in Meet until `feed()`; Meet spawns the owed 6th food if none is on screen; leaving it only counts `left`. Tests in `forage.test.ts` and `forage-v1.test.ts`. Human: does the child hesitate. |
-| C4 no food choice | OPEN (owner sign-off) | Unchanged: the friend fixes the food. The brief criterion 3 still says "picking one of three foods". The brief was not edited, so criterion 3 stays PARTIAL. |
+| C4 no food choice | DONE | Owner-approved brief edit 2026-11-09 rewords criterion 3 to food behaviour visibility under friend-first loop. |
 | C5 giraffe | DONE | Unchanged; facilitator props only. |
 | C6 Farm/House | DONE | Closed doors, not imported (tested). |
-| C7 rain | OPEN (accepted as deferred) | Brief lists the rain variant under "Deferred if time runs out", but the In-scope table still says "day + rain". |
+| C7 rain | DONE | Formally deferred; brief in-scope updated to day-only. |
 | C8 fixed 240x135, integer scale | DONE | `stage.ts` `fitScale` is `floor(s)` for s >= 1. Only a viewport smaller than 240x135 gets a fractional scale (the picture would not fit). Phone landscape (manifest is landscape-only): 844x390 -> 2x (480x270, 69% of height), 932x430 -> 3x, 667x375 -> 2x. Judged usable, so the fractional fallback was removed. Human: confirm on the target phone at 1x/2x. |
-| C9 captions for every sound | DONE | Unchanged from Round 1. A new `cc.forage.shortcut` caption covers the shortcut sound. |
+| C9 captions for every sound | DONE | Unchanged from Round 1. A new `cc.forage.shortcut` caption covers the shortcut sound. Sanity test in `v1-sanity.test.ts` enforces 2-6 words and Hindi parity. |
 | C10 meet pulse | DONE (code) | The pulse over the friend now shows only on run one for a first-time player; no glow after run one. Human: criterion 8. |
 | C11 buddy not a shortcut | DONE (code); Human: do children name it | Elephant: a branch gate in the top lane; monkey: a vine gate in the bottom lane. Taking it lays a row (trunk) or a diagonal climb (vine) of the wanted food, which no other trail has. Never required: null-buddy and ignore-the-gate completion tests for every friend, route and buddy. |
-| C12 card levels | OPEN | `progress.ts` unchanged; level UI not hidden. |
+| C12 card levels | DONE | Card levels 2-4 and star grinds hidden from all child-facing screens (`shelves.ts`, `reveal.ts`, `kit.ts`). Stored levels retained without UI display. |
 
 ### Must ship
 
 | Item | Status |
 |---|---|
 | Step 1 Friend-first + capacity + food behaviours | DONE (code); human: do behaviours read |
-| Step 2 Meet + ~3 s stamp | PARTIAL (timing, body-explains not verified) |
+| Step 2 Meet + ~3 s stamp | DONE (code; 3.15 s timed reveal, happy hop animation on feed); human: stopwatch meet-to-stamp ~3 s |
 | Step 3 Buddy pick + 2 abilities + optional shortcut | DONE (code); buddy offered from run 1 as a guest (not owned, no card granted) |
-| Step 5 Art pass, fixed 240x135 | PARTIAL: no `createLinearGradient` in `cards/scenes.ts` or forage (flat bands, tested); integer scale done. Not done: palette audit of `index.ts` `PCOL`/`#ffffff`, 1x/2x phone check. Gradients remain in `games/farm` and `games/house` art (not imported in v1). |
-| Captions | DONE incl. Hindi stub (`hi.json` has every `forage.*` and `cc.forage.*` key; `reviewed:false`). |
+| Step 5 Art pass, fixed 240x135 | DONE (code): no `createLinearGradient`, `globalAlpha`, `shadowBlur` or `#000` (enforced by `v1-sanity.test.ts`); `PCOL` and forage tokens audited to `ART_BIBLE`; integer scale locked. |
+| Captions | DONE incl. Hindi parity (`v1-sanity.test.ts` validates 2-6 words across both locales). |
 | 3 animals | DONE (4) |
 | Doors Farm/House closed | DONE |
 | Card clash out of v1 | DONE: `main.ts` no longer imports `games/trump`, `home.ts` has no clash button; files kept. |
@@ -104,19 +111,17 @@ Product-owner decision: **the brief is the contract**. Sections 1-4 above are th
 |---|---|---|
 | 1 Starts alone | PARTIAL (human) | Hint arrow and meet pulse limited to run one. |
 | 2 Buddy | PARTIAL (human) | Buddy tile offered on run one (guests); different route when the buddy is Gajju or Bunty; child must name it. |
-| 3 Food choice | PARTIAL | See C4. |
+| 3 Food behaviour | DONE in code, human to confirm | Food behaviours implemented and tested; child reaction human to observe. |
 | 4 Choose what to carry | DONE in code, human to confirm | Basket 5, a 6th food on screen, leaving it costs nothing. |
 | 5 Mistake is funny | DONE in code, human to confirm | |
-| 6 Feed + stamp | PARTIAL (human) | Feed is now a tap on the friend or basket (a tap elsewhere only moves the basket); Space/Enter also feed. |
+| 6 Feed + stamp | DONE in code, human to confirm | Feed is a tap on the friend or basket; Space/Enter also feed. Stamp ~3 s. |
 | 7 Giraffe | MISSING by design | Facilitator props. |
 | 8 No waiting for glow | PARTIAL (human) | |
 | 9 One more | human only | |
 
 ### Remaining before kids touch it
-1. Phone test at 1x/2x on the target device (draw budget, 48 px targets, reduced motion, integer-scale readability).
-2. Owner sign-off on C4 (criterion 3 wording), and decide C12 (hide level UI) and the "1 badge" limit.
-3. Palette audit of the forage `index.ts` hexes.
-4. Playtest feed discovery: with no glow after run one, a child must find "tap the friend or basket". If 2+ wait, the stop rule applies.
+1. Phone test at 1x/2x on the target device (draw budget, 48 px targets, reduced motion, integer-scale readability) using protocol in `PLAYTEST.md`.
+2. Playtest feed discovery: with no glow after run one, a child must find "tap the friend or basket". If 2+ wait, the stop rule applies.
 
 ## 6. Farm Dash (Farm door)
 

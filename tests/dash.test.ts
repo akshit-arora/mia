@@ -240,11 +240,11 @@ describe('stumble and badges', () => {
     r.pickup(); r.pickup(); r.pickup();
     expect(r.stumble()).toBe(true); expect(r.carried).toBe(2); expect(r.spills).toBe(1);
   });
-  it('clean = no stumbles, full = no spills, secret = the golden star', () => {
+  it('clean = no stumbles, secret = the golden star', () => {
     const run = (f: (r: DashRound) => void): string[] => { const r = new DashRound(); r.begin('hen'); f(r); return r.result().badges; };
-    expect(run(() => {})).toEqual(['clean', 'full']);
-    expect(run((r) => r.findSecret())).toEqual(['clean', 'full', 'secret']);
-    expect(run((r) => { r.stumble(); })).toEqual(['full']); // stumbled on an empty basket: spilled nothing
+    expect(run(() => {})).toEqual(['clean']);
+    expect(run((r) => r.findSecret())).toEqual(['clean', 'secret']);
+    expect(run((r) => { r.stumble(); })).toEqual([]); // a stumble loses the clean badge
     expect(run((r) => { r.pickup(); r.stumble(); })).toEqual([]);
     expect(run((r) => { r.pickup(); r.stumble(); r.findSecret(); })).toEqual(['secret']);
   });
